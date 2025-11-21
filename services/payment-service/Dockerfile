@@ -7,7 +7,7 @@ WORKDIR /usr/src/app
 COPY package.json ./
 
 # Install production dependencies
-RUN npm install --only=production && npm cache clean --force
+RUN npm install  && npm cache clean --force
 
 # Copy source
 COPY src ./src
