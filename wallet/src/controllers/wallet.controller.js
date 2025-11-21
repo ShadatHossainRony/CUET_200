@@ -8,7 +8,7 @@ const PaySession = require('../models/paySession.model');
 const { comparePin } = require('../utils/hash');
 const { generateTransactionId } = require('../utils/idGen');
 const { processPayment, markPaymentFailed, processTopup } = require('../services/paymentProcessing.service');
-const { sendCallback } = require('../services/callback.service');
+const { sendCallback, sendFailureCallback } = require('../services/callback.service');
 const logger = require('../utils/logger');
 
 const PAYMENT_SERVICE_URL = process.env.PAYMENT_SERVICE_URL;
@@ -36,17 +36,24 @@ async function createPaymentSession(req, res) {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + TRANSACTION_EXPIRY_HOURS);
 
-    // Create callback URL
-    const callback_url = `${PAYMENT_SERVICE_URL}/payment/success/${transaction_id}`;
+    // Create callback URLs - success and failure endpoints
+    // Payment service expects callbacks at:
+    // - http://localhost:8004/payment/success (for success)
+    // - http://localhost:8004/payment/fail (for failure)
+    const callback_success_url = `${PAYMENT_SERVICE_URL}/payment/success`;
+    const callback_fail_url = `${PAYMENT_SERVICE_URL}/payment/fail`;
 
     // Create pay session
     const paySession = new PaySession({
       transaction_id,
       amount,
       status: 'PENDING',
-      callback_url,
+      callback_url: callback_success_url, // Primary callback for success
       expiresAt,
-      meta: metadata,
+      meta: {
+        ...metadata,
+        callback_fail_url, // Store fail URL in metadata
+      },
     });
 
     await paySession.save();
@@ -234,6 +241,12 @@ async function processPaymentSubmission(req, res) {
 
     if (!result.success) {
       await markPaymentFailed(paySession, result.reason);
+      
+      // Send failure callback asynchronously (don't wait for it)
+      sendFailureCallback(paySession, result.reason).catch(error => {
+        logger.error(`Failure callback failed for ${transaction_id}: ${error.message}`);
+      });
+      
       return res.render('failed', {
         title: 'Payment Failed',
         message: result.message,
@@ -244,11 +257,11 @@ async function processPaymentSubmission(req, res) {
       });
     }
 
-    // Payment successful - send callback (don't wait for it)
+    // Payment successful - send success callback (don't wait for it)
     if (!result.alreadyProcessed) {
       // Send callback asynchronously
-      sendCallback(paySession, result.data).catch(error => {
-        logger.error(`Callback failed for ${transaction_id}: ${error.message}`);
+      sendCallback(paySession, result.data, 'success').catch(error => {
+        logger.error(`Success callback failed for ${transaction_id}: ${error.message}`);
       });
     }
 
