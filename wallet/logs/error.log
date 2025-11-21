@@ -1,0 +1,18 @@
+2025-11-21 15:31:47:3147 [31merror[39m: [31mError: /Users/mohammedsajidulislam/Desktop/avengers/wallet/src/views/failed.ejs:160[39m
+[31m    158|     <% } %>[39m
+[31m    159| [39m
+[31m >> 160|     <% if (error) { %>[39m
+[31m    161|     <div class="error-details">[39m
+[31m    162|       <div class="error-label">Technical Details</div>[39m
+[31m    163|       <div class="error-value"><%= error %></div>[39m
+
+[31merror is not defined[39m
+2025-11-21 15:34:08:348 [31merror[39m: [31mError: /Users/mohammedsajidulislam/Desktop/avengers/wallet/src/views/failed.ejs:160[39m
+[31m    158|     <% } %>[39m
+[31m    159| [39m
+[31m >> 160|     <% if (error) { %>[39m
+[31m    161|     <div class="error-details">[39m
+[31m    162|       <div class="error-label">Technical Details</div>[39m
+[31m    163|       <div class="error-value"><%= error %></div>[39m
+
+[31merror is not defined[39m

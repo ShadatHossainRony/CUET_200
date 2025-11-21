@@ -1,0 +1,35 @@
+2025-11-21 15:18:00:180 [32minfo[39m: [32mConnected to MongoDB[39m
+2025-11-21 15:18:00:180 [32minfo[39m: [32mWallet Gateway running on port 9001[39m
+2025-11-21 15:18:00:180 [32minfo[39m: [32mEnvironment: development[39m
+2025-11-21 15:18:32:1832 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:09:18:32 +0000] "GET /health HTTP/1.1" 200 81 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 15:18:32:1832 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:09:18:32 +0000] "GET /health HTTP/1.1" 200 81 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 15:18:33:1833 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:09:18:33 +0000] "GET /favicon.ico HTTP/1.1" 404 43 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 15:18:37:1837 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:09:18:37 +0000] "GET / HTTP/1.1" 200 468 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 15:24:32:2432 [32minfo[39m: [32mPayment session created: tx_hVRu6xZ--, Amount: 50[39m
+2025-11-21 15:24:32:2432 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:09:24:32 +0000] "POST /wallet/pay HTTP/1.1" 201 131 "-" "axios/1.13.2"[39m
+2025-11-21 15:25:51:2551 [32minfo[39m: [32mPayment session created: tx_T-ExPqSnY, Amount: 50[39m
+2025-11-21 15:25:51:2551 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:09:25:51 +0000] "POST /wallet/pay HTTP/1.1" 201 131 "-" "axios/1.13.2"[39m
+2025-11-21 15:26:26:2626 [32minfo[39m: [32mPayment session created: tx_IBUiiU4-d, Amount: 50[39m
+2025-11-21 15:26:26:2626 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:09:26:26 +0000] "POST /wallet/pay HTTP/1.1" 201 131 "-" "axios/1.13.2"[39m
+2025-11-21 15:26:57:2657 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:09:26:57 +0000] "GET /wallet/pay/tx_T-ExPqSnY HTTP/1.1" 200 4497 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 15:31:47:3147 [32minfo[39m: [32mPayment marked as failed: tx_T-ExPqSnY, Reason: INSUFFICIENT_BALANCE[39m
+2025-11-21 15:31:47:3147 [31merror[39m: [31mError: /Users/mohammedsajidulislam/Desktop/avengers/wallet/src/views/failed.ejs:160[39m
+[31m    158|     <% } %>[39m
+[31m    159| [39m
+[31m >> 160|     <% if (error) { %>[39m
+[31m    161|     <div class="error-details">[39m
+[31m    162|       <div class="error-label">Technical Details</div>[39m
+[31m    163|       <div class="error-value"><%= error %></div>[39m
+
+[31merror is not defined[39m
+2025-11-21 15:31:47:3147 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:09:31:47 +0000] "POST /wallet/pay/tx_T-ExPqSnY HTTP/1.1" 500 363 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 15:34:08:348 [31merror[39m: [31mError: /Users/mohammedsajidulislam/Desktop/avengers/wallet/src/views/failed.ejs:160[39m
+[31m    158|     <% } %>[39m
+[31m    159| [39m
+[31m >> 160|     <% if (error) { %>[39m
+[31m    161|     <div class="error-details">[39m
+[31m    162|       <div class="error-label">Technical Details</div>[39m
+[31m    163|       <div class="error-value"><%= error %></div>[39m
+
+[31merror is not defined[39m
+2025-11-21 15:34:08:348 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:09:34:08 +0000] "POST /wallet/pay/tx_T-ExPqSnY HTTP/1.1" 500 363 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
