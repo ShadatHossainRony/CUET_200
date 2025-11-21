@@ -6,9 +6,8 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const User = require('../src/models/user.model');
-const { hashPin } = require('../src/utils/hash');
 
-const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/wallet';
+const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://monogdb:27017/wallet';
 
 const testUsers = [
   {
@@ -46,10 +45,21 @@ const testUsers = [
 async function seed() {
   try {
     console.log('Connecting to MongoDB...');
-    await mongoose.connect(MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    // Simple retry logic for seed script
+    let connected = false;
+    for (let i = 0; i < 5; i++) {
+      try {
+        await mongoose.connect(MONGO_URI);
+        connected = true;
+        break;
+      } catch (err) {
+        console.error(`MongoDB connect attempt ${i + 1} failed: ${err.message}`);
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+    }
+    if (!connected) {
+      throw new Error('Unable to connect to MongoDB for seeding');
+    }
     console.log('Connected to MongoDB');
 
     // Clear existing users
@@ -60,10 +70,9 @@ async function seed() {
     // Create test users
     console.log('Creating test users...');
     for (const userData of testUsers) {
-      const pinHash = await hashPin(userData.pin);
       const user = new User({
         phone: userData.phone,
-        pinHash,
+        pin: userData.pin, // Store PIN as plain text
         name: userData.name,
         balance: userData.balance,
         isActive: true,
