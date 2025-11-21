@@ -1,0 +1,373 @@
+{
+  "dashboard": {
+    "title": "CareForAll - Service Metrics",
+    "tags": ["careforall", "services", "microservices"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 0,
+    "refresh": "5s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "API Gateway - Request Rate",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{job=\"api-gateway\"}[5m])",
+            "legendFormat": "{{method}} {{path}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "API Gateway - Response Time (P95)",
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 0,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"api-gateway\"}[5m]))",
+            "legendFormat": "P95 Latency",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{job=\"api-gateway\"}[5m]))",
+            "legendFormat": "P99 Latency",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s",
+            "label": "Response Time"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Auth Service - Login/Register Requests",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 6,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{job=\"auth-service\",path=~\"/auth/login|/auth/register\"}[5m])",
+            "legendFormat": "{{path}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Auth Service - Success vs Failed",
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 6,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{job=\"auth-service\",status=~\"2..\"}[5m])",
+            "legendFormat": "Success",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(http_requests_total{job=\"auth-service\",status=~\"4..|5..\"}[5m])",
+            "legendFormat": "Failed",
+            "refId": "B"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Campaign Service - Active Campaigns",
+        "type": "stat",
+        "gridPos": {
+          "x": 0,
+          "y": 12,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "campaign_active_count",
+            "legendFormat": "Active Campaigns",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "blue"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Campaign Service - Request Rate",
+        "type": "graph",
+        "gridPos": {
+          "x": 6,
+          "y": 12,
+          "w": 18,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{job=\"campaign-service\"}[5m])",
+            "legendFormat": "{{method}} {{path}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Payment Service - Transaction Rate",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 18,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "rate(payment_transactions_total[5m])",
+            "legendFormat": "{{status}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Payment Service - Success Rate",
+        "type": "gauge",
+        "gridPos": {
+          "x": 12,
+          "y": 18,
+          "w": 6,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "(sum(rate(payment_transactions_total{status=\"success\"}[5m])) / sum(rate(payment_transactions_total[5m]))) * 100",
+            "legendFormat": "Success Rate",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 90,
+                  "color": "yellow"
+                },
+                {
+                  "value": 95,
+                  "color": "green"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Payment Service - Amount Processed",
+        "type": "stat",
+        "gridPos": {
+          "x": 18,
+          "y": 18,
+          "w": 6,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "sum(payment_amount_total)",
+            "legendFormat": "Total Amount",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD"
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "Pledge Service - Active Pledges",
+        "type": "stat",
+        "gridPos": {
+          "x": 0,
+          "y": 24,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "pledge_active_count",
+            "legendFormat": "Active Pledges",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Pledge Service - Recurring Payment Jobs",
+        "type": "graph",
+        "gridPos": {
+          "x": 6,
+          "y": 24,
+          "w": 18,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "rate(pledge_payment_processed_total[5m])",
+            "legendFormat": "{{status}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "Totals Service - Cache Hit Rate",
+        "type": "gauge",
+        "gridPos": {
+          "x": 0,
+          "y": 30,
+          "w": 8,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "(sum(rate(totals_cache_hits[5m])) / (sum(rate(totals_cache_hits[5m])) + sum(rate(totals_cache_misses[5m])))) * 100",
+            "legendFormat": "Cache Hit Rate",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 70,
+                  "color": "yellow"
+                },
+                {
+                  "value": 90,
+                  "color": "green"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 13,
+        "title": "Totals Service - Calculation Time",
+        "type": "graph",
+        "gridPos": {
+          "x": 8,
+          "y": 30,
+          "w": 8,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(totals_calculation_duration_seconds_bucket[5m]))",
+            "legendFormat": "P95 Calculation Time",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s"
+          }
+        ]
+      },
+      {
+        "id": 14,
+        "title": "Notification Service - Queue Status",
+        "type": "graph",
+        "gridPos": {
+          "x": 16,
+          "y": 30,
+          "w": 8,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "notification_queue_size",
+            "legendFormat": "Queue Size",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(notification_sent_total[5m])",
+            "legendFormat": "Sent Rate",
+            "refId": "B"
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "title": "Admin Service - API Calls",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 36,
+          "w": 24,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{job=\"admin-service\"}[5m])",
+            "legendFormat": "{{method}} {{path}}",
+            "refId": "A"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,457 @@
+# Prometheus Alert Rules
+# CareForAll Donation Platform - Production Monitoring
+
+groups:
+  # ============================================
+  # SERVICE HEALTH ALERTS
+  # ============================================
+  - name: service_health
+    interval: 30s
+    rules:
+      - alert: ServiceDown
+        expr: up{job=~".*-service|api-gateway"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.job }} on {{ $labels.instance }} has been down for more than 1 minute."
+
+      - alert: ServiceHighErrorRate
+        expr: |
+          (sum(rate(http_requests_total{status=~"5.."}[5m])) by (job) / 
+          sum(rate(http_requests_total[5m])) by (job)) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          category: errors
+        annotations:
+          summary: "High error rate on {{ $labels.job }}"
+          description: "{{ $labels.job }} has error rate above 5% (current: {{ $value | humanizePercentage }})"
+
+      - alert: ServiceHighLatency
+        expr: |
+          histogram_quantile(0.95, 
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (job, le)
+          ) > 2
+        for: 10m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High latency on {{ $labels.job }}"
+          description: "{{ $labels.job }} P95 latency is above 2s (current: {{ $value }}s)"
+
+      - alert: ServiceVeryHighLatency
+        expr: |
+          histogram_quantile(0.95, 
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (job, le)
+          ) > 5
+        for: 5m
+        labels:
+          severity: critical
+          category: performance
+        annotations:
+          summary: "Very high latency on {{ $labels.job }}"
+          description: "{{ $labels.job }} P95 latency is above 5s (current: {{ $value }}s)"
+
+  # ============================================
+  # INFRASTRUCTURE ALERTS
+  # ============================================
+  - name: infrastructure
+    interval: 30s
+    rules:
+      - alert: HighCPUUsage
+        expr: |
+          100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+          category: resources
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 80% (current: {{ $value | humanize }}%)"
+
+      - alert: CriticalCPUUsage
+        expr: |
+          100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+        for: 5m
+        labels:
+          severity: critical
+          category: resources
+        annotations:
+          summary: "Critical CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 90% (current: {{ $value | humanize }}%)"
+
+      - alert: HighMemoryUsage
+        expr: |
+          (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          category: resources
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 80% (current: {{ $value | humanize }}%)"
+
+      - alert: CriticalMemoryUsage
+        expr: |
+          (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+          category: resources
+        annotations:
+          summary: "Critical memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 90% (current: {{ $value | humanize }}%)"
+
+      - alert: HighDiskUsage
+        expr: |
+          (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          category: resources
+        annotations:
+          summary: "High disk usage on {{ $labels.instance }}"
+          description: "Disk usage is above 80% (current: {{ $value | humanize }}%)"
+
+      - alert: CriticalDiskUsage
+        expr: |
+          (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+          category: resources
+        annotations:
+          summary: "Critical disk usage on {{ $labels.instance }}"
+          description: "Disk usage is above 90% (current: {{ $value | humanize }}%)"
+
+  # ============================================
+  # CONTAINER ALERTS
+  # ============================================
+  - name: containers
+    interval: 30s
+    rules:
+      - alert: ContainerHighCPU
+        expr: |
+          sum(rate(container_cpu_usage_seconds_total{name=~".+"}[5m])) by (name) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          category: containers
+        annotations:
+          summary: "Container {{ $labels.name }} high CPU"
+          description: "Container {{ $labels.name }} is using more than 80% of allocated CPU"
+
+      - alert: ContainerHighMemory
+        expr: |
+          (container_memory_usage_bytes{name=~".+"} / container_spec_memory_limit_bytes{name=~".+"}) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          category: containers
+        annotations:
+          summary: "Container {{ $labels.name }} high memory"
+          description: "Container {{ $labels.name }} is using more than 80% of allocated memory"
+
+      - alert: ContainerRestarting
+        expr: |
+          rate(container_last_seen{name=~".+"}[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          category: containers
+        annotations:
+          summary: "Container {{ $labels.name }} is restarting"
+          description: "Container {{ $labels.name }} has restarted multiple times in the last 5 minutes"
+
+  # ============================================
+  # DATABASE ALERTS
+  # ============================================
+  - name: databases
+    interval: 30s
+    rules:
+      - alert: MongoDBDown
+        expr: up{job="mongodb"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: database
+        annotations:
+          summary: "MongoDB is down"
+          description: "MongoDB instance has been down for more than 1 minute"
+
+      - alert: MongoDBHighConnections
+        expr: mongodb_connections{state="current"} / mongodb_connections{state="available"} > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "MongoDB high connection usage"
+          description: "MongoDB is using more than 80% of available connections (current: {{ $value | humanizePercentage }})"
+
+      - alert: MongoDBSlowQueries
+        expr: rate(mongodb_mongod_op_latencies_latency_total[5m]) > 100000
+        for: 10m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "MongoDB slow queries detected"
+          description: "MongoDB has slow queries (average latency: {{ $value }}µs)"
+
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: database
+        annotations:
+          summary: "Redis is down"
+          description: "Redis instance has been down for more than 1 minute"
+
+      - alert: RedisHighMemory
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "Redis high memory usage"
+          description: "Redis is using more than 90% of max memory (current: {{ $value | humanizePercentage }})"
+
+      - alert: RedisLowCacheHitRate
+        expr: |
+          rate(redis_keyspace_hits_total[5m]) / 
+          (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m])) < 0.7
+        for: 10m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "Redis low cache hit rate"
+          description: "Redis cache hit rate is below 70% (current: {{ $value | humanizePercentage }})"
+
+  # ============================================
+  # PAYMENT SYSTEM ALERTS
+  # ============================================
+  - name: payment_system
+    interval: 30s
+    rules:
+      - alert: HighPaymentFailureRate
+        expr: |
+          (sum(rate(payment_transactions_total{status="failed"}[5m])) / 
+          sum(rate(payment_transactions_total[5m]))) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+          category: business
+        annotations:
+          summary: "High payment failure rate"
+          description: "Payment failure rate is above 10% (current: {{ $value | humanizePercentage }})"
+
+      - alert: PaymentProcessingSlowdown
+        expr: |
+          histogram_quantile(0.95, 
+            sum(rate(payment_processing_duration_seconds_bucket[5m])) by (le)
+          ) > 10
+        for: 10m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "Payment processing is slow"
+          description: "Payment P95 processing time is above 10s (current: {{ $value }}s)"
+
+      - alert: NoPaymentsProcessed
+        expr: |
+          rate(payment_transactions_total[10m]) == 0
+        for: 30m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "No payments processed recently"
+          description: "No payments have been processed in the last 30 minutes"
+
+      - alert: WebhookFailureRateHigh
+        expr: |
+          (sum(rate(payment_webhook_calls_total{status="failed"}[5m])) / 
+          sum(rate(payment_webhook_calls_total[5m]))) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+          category: integration
+        annotations:
+          summary: "High webhook failure rate"
+          description: "Payment webhook failure rate is above 20% (current: {{ $value | humanizePercentage }})"
+
+  # ============================================
+  # QUEUE SYSTEM ALERTS
+  # ============================================
+  - name: queue_system
+    interval: 30s
+    rules:
+      - alert: HighQueueBacklog
+        expr: bullmq_queue_waiting_count > 100
+        for: 10m
+        labels:
+          severity: warning
+          category: queues
+        annotations:
+          summary: "High queue backlog in {{ $labels.queue }}"
+          description: "Queue {{ $labels.queue }} has more than 100 waiting jobs (current: {{ $value }})"
+
+      - alert: CriticalQueueBacklog
+        expr: bullmq_queue_waiting_count > 500
+        for: 5m
+        labels:
+          severity: critical
+          category: queues
+        annotations:
+          summary: "Critical queue backlog in {{ $labels.queue }}"
+          description: "Queue {{ $labels.queue }} has more than 500 waiting jobs (current: {{ $value }})"
+
+      - alert: HighJobFailureRate
+        expr: |
+          (rate(bullmq_queue_failed_count[5m]) / 
+          rate(bullmq_queue_completed_count[5m])) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          category: queues
+        annotations:
+          summary: "High job failure rate in {{ $labels.queue }}"
+          description: "Job failure rate in {{ $labels.queue }} is above 10% (current: {{ $value | humanizePercentage }})"
+
+      - alert: QueueProcessingStalled
+        expr: |
+          rate(bullmq_queue_completed_count[10m]) == 0 and bullmq_queue_waiting_count > 0
+        for: 15m
+        labels:
+          severity: critical
+          category: queues
+        annotations:
+          summary: "Queue processing stalled: {{ $labels.queue }}"
+          description: "Queue {{ $labels.queue }} has waiting jobs but no jobs completed in 15 minutes"
+
+  # ============================================
+  # NGINX LOAD BALANCER ALERTS
+  # ============================================
+  - name: load_balancer
+    interval: 30s
+    rules:
+      - alert: NginxDown
+        expr: up{job="nginx-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "NGINX is down"
+          description: "NGINX load balancer has been down for more than 1 minute"
+
+      - alert: NginxHighRequestRate
+        expr: rate(nginx_http_requests_total[5m]) > 1000
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "NGINX high request rate"
+          description: "NGINX is handling more than 1000 req/s (current: {{ $value }})"
+
+      - alert: NginxHighActiveConnections
+        expr: nginx_connections_active > 500
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "NGINX high active connections"
+          description: "NGINX has more than 500 active connections (current: {{ $value }})"
+
+  # ============================================
+  # BUSINESS METRICS ALERTS
+  # ============================================
+  - name: business_metrics
+    interval: 1m
+    rules:
+      - alert: LowDonationVolume
+        expr: |
+          rate(payment_amount_total[1h]) < 100
+        for: 2h
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "Low donation volume"
+          description: "Donation volume is unusually low (current rate: ${{ $value }}/hour)"
+
+      - alert: NoDonationsReceived
+        expr: |
+          increase(payment_transactions_total{status="success"}[1h]) == 0
+        for: 2h
+        labels:
+          severity: critical
+          category: business
+        annotations:
+          summary: "No donations received"
+          description: "No successful donations have been received in the last 2 hours"
+
+      - alert: HighPledgeCancellationRate
+        expr: |
+          (rate(pledge_status_changes_total{to_status="cancelled"}[1h]) / 
+          rate(pledge_status_changes_total{to_status="active"}[1h])) > 0.2
+        for: 30m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "High pledge cancellation rate"
+          description: "Pledge cancellation rate is above 20% (current: {{ $value | humanizePercentage }})"
+
+  # ============================================
+  # SLA COMPLIANCE ALERTS
+  # ============================================
+  - name: sla_compliance
+    interval: 1m
+    rules:
+      - alert: SLAAvailabilityViolation
+        expr: |
+          avg_over_time(up{job=~".*-service|api-gateway"}[1h]) < 0.999
+        for: 5m
+        labels:
+          severity: critical
+          category: sla
+        annotations:
+          summary: "SLA availability violation for {{ $labels.job }}"
+          description: "{{ $labels.job }} availability is below 99.9% target (current: {{ $value | humanizePercentage }})"
+
+      - alert: SLALatencyViolation
+        expr: |
+          histogram_quantile(0.95, 
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (job, le)
+          ) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+          category: sla
+        annotations:
+          summary: "SLA latency violation for {{ $labels.job }}"
+          description: "{{ $labels.job }} P95 latency is above 500ms target (current: {{ $value }}s)"
+
+      - alert: SLAErrorRateViolation
+        expr: |
+          (sum(rate(http_requests_total{status=~"5.."}[5m])) by (job) / 
+          sum(rate(http_requests_total[5m])) by (job)) > 0.01
+        for: 10m
+        labels:
+          severity: warning
+          category: sla
+        annotations:
+          summary: "SLA error rate violation for {{ $labels.job }}"
+          description: "{{ $labels.job }} error rate is above 1% target (current: {{ $value | humanizePercentage }})"

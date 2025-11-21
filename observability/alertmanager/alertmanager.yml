@@ -1,0 +1,228 @@
+# Alertmanager Configuration
+# CareForAll Donation Platform - Alert Routing and Notification
+
+global:
+  # Default SMTP configuration for email alerts
+  smtp_smarthost: '${SMTP_HOST:-smtp.gmail.com}:${SMTP_PORT:-587}'
+  smtp_from: '${ALERT_EMAIL_FROM:-alerts@careforall.com}'
+  smtp_auth_username: '${SMTP_USER:-}'
+  smtp_auth_password: '${SMTP_PASS:-}'
+  smtp_require_tls: true
+
+  # Slack webhook for critical alerts (optional)
+  slack_api_url: '${SLACK_WEBHOOK_URL:-}'
+
+  # PagerDuty integration key (optional)
+  pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+
+# Templates for alert formatting
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Route tree for alert distribution
+route:
+  # Default receiver for all alerts
+  receiver: 'default-receiver'
+  
+  # Group alerts to reduce noise
+  group_by: ['alertname', 'cluster', 'service']
+  
+  # Wait time before sending initial notification
+  group_wait: 10s
+  
+  # Wait time before sending update about existing alert group
+  group_interval: 10s
+  
+  # Minimum time between re-notifications of the same alert
+  repeat_interval: 12h
+
+  # Child routes for specific alert types
+  routes:
+    # Critical alerts - immediate notification
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 0s
+      group_interval: 5m
+      repeat_interval: 4h
+      continue: true  # Also send to default receiver
+
+    # Payment system alerts - business team
+    - match:
+        category: business
+      receiver: 'business-team'
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 6h
+
+    # Database alerts - DBA team
+    - match:
+        category: database
+      receiver: 'database-team'
+      group_wait: 1m
+      group_interval: 10m
+      repeat_interval: 8h
+
+    # Infrastructure alerts - ops team
+    - match_re:
+        category: infrastructure|resources|containers
+      receiver: 'ops-team'
+      group_wait: 2m
+      group_interval: 10m
+      repeat_interval: 12h
+
+    # SLA violations - management
+    - match:
+        category: sla
+      receiver: 'management-team'
+      group_wait: 5m
+      group_interval: 15m
+      repeat_interval: 24h
+
+# Inhibition rules to reduce alert noise
+inhibit_rules:
+  # If service is down, don't alert about high error rates
+  - source_match:
+      severity: critical
+      alertname: ServiceDown
+    target_match:
+      severity: warning
+    equal: ['job', 'instance']
+
+  # If critical CPU, inhibit warning CPU alerts
+  - source_match:
+      severity: critical
+      alertname: CriticalCPUUsage
+    target_match:
+      severity: warning
+      alertname: HighCPUUsage
+    equal: ['instance']
+
+  # If critical memory, inhibit warning memory alerts
+  - source_match:
+      severity: critical
+      alertname: CriticalMemoryUsage
+    target_match:
+      severity: warning
+      alertname: HighMemoryUsage
+    equal: ['instance']
+
+  # If NGINX is down, don't alert about connections
+  - source_match:
+      alertname: NginxDown
+    target_match_re:
+      alertname: Nginx.*
+    equal: ['instance']
+
+  # If database is down, don't alert about slow queries
+  - source_match:
+      alertname: MongoDBDown
+    target_match_re:
+      alertname: MongoDB.*
+    equal: ['instance']
+
+# Receiver configurations
+receivers:
+  # Default receiver - logs only (development)
+  - name: 'default-receiver'
+    webhook_configs:
+      - url: 'http://localhost:9099/webhook'
+        send_resolved: true
+
+  # Critical alerts - multiple channels
+  - name: 'critical-alerts'
+    email_configs:
+      - to: '${CRITICAL_EMAIL:-oncall@careforall.com}'
+        headers:
+          Subject: '[CRITICAL] {{ .GroupLabels.alertname }} - CareForAll Platform'
+        html: |
+          <h2>Critical Alert Triggered</h2>
+          <p><strong>Alert:</strong> {{ .GroupLabels.alertname }}</p>
+          <p><strong>Severity:</strong> {{ .CommonLabels.severity }}</p>
+          <p><strong>Description:</strong> {{ .CommonAnnotations.description }}</p>
+          <p><strong>Time:</strong> {{ .StartsAt }}</p>
+        send_resolved: true
+    
+    slack_configs:
+      - channel: '#critical-alerts'
+        title: ':rotating_light: Critical Alert'
+        text: |
+          *Alert:* {{ .GroupLabels.alertname }}
+          *Severity:* {{ .CommonLabels.severity }}
+          *Description:* {{ .CommonAnnotations.description }}
+          *Service:* {{ .CommonLabels.job }}
+        send_resolved: true
+        actions:
+          - type: button
+            text: 'View in Grafana'
+            url: 'http://grafana:3000/d/alerts-sla'
+          - type: button
+            text: 'View in Prometheus'
+            url: 'http://prometheus:9090/alerts'
+    
+    pagerduty_configs:
+      - service_key: '${PAGERDUTY_SERVICE_KEY:-}'
+        description: '{{ .GroupLabels.alertname }}: {{ .CommonAnnotations.summary }}'
+        severity: 'critical'
+        send_resolved: true
+
+  # Business team - payment and donation issues
+  - name: 'business-team'
+    email_configs:
+      - to: '${BUSINESS_EMAIL:-business@careforall.com}'
+        headers:
+          Subject: '[BUSINESS ALERT] {{ .GroupLabels.alertname }}'
+        html: |
+          <h2>Business Metrics Alert</h2>
+          <p><strong>Alert:</strong> {{ .GroupLabels.alertname }}</p>
+          <p><strong>Description:</strong> {{ .CommonAnnotations.description }}</p>
+          <p><strong>Impact:</strong> This may affect revenue and donor experience</p>
+        send_resolved: true
+    
+    slack_configs:
+      - channel: '#business-alerts'
+        title: ':moneybag: Business Alert'
+        text: '{{ .CommonAnnotations.summary }}'
+        send_resolved: true
+
+  # Database team - MongoDB and Redis issues
+  - name: 'database-team'
+    email_configs:
+      - to: '${DBA_EMAIL:-dba@careforall.com}'
+        headers:
+          Subject: '[DATABASE] {{ .GroupLabels.alertname }}'
+        send_resolved: true
+    
+    slack_configs:
+      - channel: '#database-alerts'
+        title: ':database: Database Alert'
+        text: '{{ .CommonAnnotations.summary }}'
+        send_resolved: true
+
+  # Ops team - infrastructure and containers
+  - name: 'ops-team'
+    email_configs:
+      - to: '${OPS_EMAIL:-ops@careforall.com}'
+        headers:
+          Subject: '[INFRASTRUCTURE] {{ .GroupLabels.alertname }}'
+        send_resolved: true
+    
+    slack_configs:
+      - channel: '#ops-alerts'
+        title: ':gear: Infrastructure Alert'
+        text: '{{ .CommonAnnotations.summary }}'
+        send_resolved: true
+
+  # Management team - SLA violations
+  - name: 'management-team'
+    email_configs:
+      - to: '${MANAGEMENT_EMAIL:-management@careforall.com}'
+        headers:
+          Subject: '[SLA VIOLATION] {{ .GroupLabels.alertname }}'
+        html: |
+          <h2>SLA Violation Detected</h2>
+          <p><strong>Alert:</strong> {{ .GroupLabels.alertname }}</p>
+          <p><strong>Service:</strong> {{ .CommonLabels.job }}</p>
+          <p><strong>Description:</strong> {{ .CommonAnnotations.description }}</p>
+          <p><strong>Action Required:</strong> Review service performance and take corrective action</p>
+        send_resolved: true

@@ -1,0 +1,567 @@
+{
+  "dashboard": {
+    "title": "CareForAll - Infrastructure & Resources",
+    "tags": ["careforall", "infrastructure", "resources", "performance"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 0,
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Total System CPU Usage",
+        "type": "gauge",
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 8,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+            "legendFormat": "CPU Usage",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "green"
+                },
+                {
+                  "value": 70,
+                  "color": "yellow"
+                },
+                {
+                  "value": 90,
+                  "color": "red"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Total System Memory Usage",
+        "type": "gauge",
+        "gridPos": {
+          "x": 8,
+          "y": 0,
+          "w": 8,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
+            "legendFormat": "Memory Usage",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "green"
+                },
+                {
+                  "value": 80,
+                  "color": "yellow"
+                },
+                {
+                  "value": 95,
+                  "color": "red"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Disk Usage",
+        "type": "gauge",
+        "gridPos": {
+          "x": 16,
+          "y": 0,
+          "w": 8,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "100 - ((node_filesystem_avail_bytes{mountpoint=\"/\",fstype!=\"rootfs\"} / node_filesystem_size_bytes{mountpoint=\"/\",fstype!=\"rootfs\"}) * 100)",
+            "legendFormat": "Disk Usage",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "green"
+                },
+                {
+                  "value": 80,
+                  "color": "yellow"
+                },
+                {
+                  "value": 90,
+                  "color": "red"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Container CPU Usage by Service",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 6,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "rate(container_cpu_usage_seconds_total{name=~\".*-service|nginx.*|mongodb|redis\"}[5m]) * 100",
+            "legendFormat": "{{name}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "percent",
+            "label": "CPU %"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Container Memory Usage by Service",
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 6,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "container_memory_usage_bytes{name=~\".*-service|nginx.*|mongodb|redis\"} / 1024 / 1024",
+            "legendFormat": "{{name}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "mbytes",
+            "label": "Memory (MB)"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "NGINX - Active Connections",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 14,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "nginx_connections_active",
+            "legendFormat": "Active",
+            "refId": "A"
+          },
+          {
+            "expr": "nginx_connections_reading",
+            "legendFormat": "Reading",
+            "refId": "B"
+          },
+          {
+            "expr": "nginx_connections_writing",
+            "legendFormat": "Writing",
+            "refId": "C"
+          },
+          {
+            "expr": "nginx_connections_waiting",
+            "legendFormat": "Waiting",
+            "refId": "D"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "NGINX - Request Rate",
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 14,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "rate(nginx_http_requests_total[5m])",
+            "legendFormat": "Requests/sec",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "reqps"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "MongoDB - Operations per Second",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 20,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "rate(mongodb_op_counters_total[5m])",
+            "legendFormat": "{{type}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "MongoDB - Connection Pool",
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 20,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "mongodb_connections{state=\"current\"}",
+            "legendFormat": "Current",
+            "refId": "A"
+          },
+          {
+            "expr": "mongodb_connections{state=\"available\"}",
+            "legendFormat": "Available",
+            "refId": "B"
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "MongoDB - Query Execution Time",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 26,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(mongodb_operation_duration_seconds_bucket[5m]))",
+            "legendFormat": "P95",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(mongodb_operation_duration_seconds_bucket[5m]))",
+            "legendFormat": "P99",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s"
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "MongoDB - Document Operations",
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 26,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "rate(mongodb_document_total[5m])",
+            "legendFormat": "{{state}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "Redis - Memory Usage",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 32,
+          "w": 8,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "redis_memory_used_bytes / 1024 / 1024",
+            "legendFormat": "Used (MB)",
+            "refId": "A"
+          },
+          {
+            "expr": "redis_memory_max_bytes / 1024 / 1024",
+            "legendFormat": "Max (MB)",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "mbytes"
+          }
+        ]
+      },
+      {
+        "id": 13,
+        "title": "Redis - Hit Rate",
+        "type": "gauge",
+        "gridPos": {
+          "x": 8,
+          "y": 32,
+          "w": 8,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "(redis_keyspace_hits_total / (redis_keyspace_hits_total + redis_keyspace_misses_total)) * 100",
+            "legendFormat": "Hit Rate",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 70,
+                  "color": "yellow"
+                },
+                {
+                  "value": 90,
+                  "color": "green"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 14,
+        "title": "Redis - Connected Clients",
+        "type": "stat",
+        "gridPos": {
+          "x": 16,
+          "y": 32,
+          "w": 8,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "redis_connected_clients",
+            "legendFormat": "Clients",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "title": "Redis - Commands per Second",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 38,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "rate(redis_commands_processed_total[5m])",
+            "legendFormat": "Commands/sec",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 16,
+        "title": "BullMQ - Queue Metrics",
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 38,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "bullmq_queue_waiting",
+            "legendFormat": "{{queue}} - Waiting",
+            "refId": "A"
+          },
+          {
+            "expr": "bullmq_queue_active",
+            "legendFormat": "{{queue}} - Active",
+            "refId": "B"
+          },
+          {
+            "expr": "bullmq_queue_completed",
+            "legendFormat": "{{queue}} - Completed",
+            "refId": "C"
+          },
+          {
+            "expr": "bullmq_queue_failed",
+            "legendFormat": "{{queue}} - Failed",
+            "refId": "D"
+          }
+        ]
+      },
+      {
+        "id": 17,
+        "title": "BullMQ - Job Processing Rate",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 44,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "rate(bullmq_jobs_completed_total[5m])",
+            "legendFormat": "{{queue}} - Completed",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(bullmq_jobs_failed_total[5m])",
+            "legendFormat": "{{queue}} - Failed",
+            "refId": "B"
+          }
+        ]
+      },
+      {
+        "id": 18,
+        "title": "BullMQ - Job Duration",
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 44,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(bullmq_job_duration_seconds_bucket[5m]))",
+            "legendFormat": "{{queue}} - P95",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s"
+          }
+        ]
+      },
+      {
+        "id": 19,
+        "title": "Network I/O by Container",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 50,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "rate(container_network_receive_bytes_total{name=~\".*-service|nginx.*|mongodb|redis\"}[5m]) / 1024",
+            "legendFormat": "{{name}} - RX",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(container_network_transmit_bytes_total{name=~\".*-service|nginx.*|mongodb|redis\"}[5m]) / 1024",
+            "legendFormat": "{{name}} - TX",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "KBs",
+            "label": "KB/s"
+          }
+        ]
+      },
+      {
+        "id": 20,
+        "title": "Disk I/O",
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 50,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "rate(node_disk_read_bytes_total[5m]) / 1024 / 1024",
+            "legendFormat": "Read MB/s",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(node_disk_written_bytes_total[5m]) / 1024 / 1024",
+            "legendFormat": "Write MB/s",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "MBs"
+          }
+        ]
+      }
+    ]
+  }
+}

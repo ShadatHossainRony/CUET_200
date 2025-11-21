@@ -1,0 +1,575 @@
+{
+  "dashboard": {
+    "title": "CareForAll - Business Metrics & Analytics",
+    "tags": ["careforall", "business", "analytics", "kpi"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 0,
+    "refresh": "1m",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Total Revenue (All Time)",
+        "type": "stat",
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 6,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "sum(payment_amount_total)",
+            "legendFormat": "Total Revenue",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "decimals": 2,
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "green"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Today's Revenue",
+        "type": "stat",
+        "gridPos": {
+          "x": 6,
+          "y": 0,
+          "w": 6,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "sum(increase(payment_amount_total[24h]))",
+            "legendFormat": "Today's Revenue",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "decimals": 2,
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "blue"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Total Donors",
+        "type": "stat",
+        "gridPos": {
+          "x": 12,
+          "y": 0,
+          "w": 6,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "count(count by (user_id) (payment_transactions_total))",
+            "legendFormat": "Unique Donors",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "purple"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Active Campaigns",
+        "type": "stat",
+        "gridPos": {
+          "x": 18,
+          "y": 0,
+          "w": 6,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "campaign_active_count{status=\"ACTIVE\"}",
+            "legendFormat": "Active Campaigns",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "orange"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Revenue Trend (7 Days)",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 6,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "sum(increase(payment_amount_total[1h]))",
+            "legendFormat": "Hourly Revenue",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "currencyUSD",
+            "label": "Revenue"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Donation Count Trend",
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 6,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "sum(increase(payment_transactions_total{status=\"success\"}[1h]))",
+            "legendFormat": "Successful Donations/hour",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Average Donation Amount",
+        "type": "stat",
+        "gridPos": {
+          "x": 0,
+          "y": 14,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "sum(payment_amount_total) / sum(payment_transactions_total{status=\"success\"})",
+            "legendFormat": "Avg Donation",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "decimals": 2
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "Largest Donation Today",
+        "type": "stat",
+        "gridPos": {
+          "x": 6,
+          "y": 14,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "max_over_time(payment_amount[24h])",
+            "legendFormat": "Max Donation",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "decimals": 2,
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "green"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Conversion Rate (Visitor to Donor)",
+        "type": "gauge",
+        "gridPos": {
+          "x": 12,
+          "y": 14,
+          "w": 6,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "(sum(increase(payment_transactions_total{status=\"success\"}[24h])) / sum(increase(http_requests_total{path=\"/campaigns\"}[24h]))) * 100",
+            "legendFormat": "Conversion Rate",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 2,
+                  "color": "yellow"
+                },
+                {
+                  "value": 5,
+                  "color": "green"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "Recurring Revenue (MRR)",
+        "type": "stat",
+        "gridPos": {
+          "x": 18,
+          "y": 14,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "sum(pledge_monthly_amount{status=\"ACTIVE\"})",
+            "legendFormat": "Monthly Recurring Revenue",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "decimals": 2
+          }
+        }
+      },
+      {
+        "id": 11,
+        "title": "Active vs Suspended Pledges",
+        "type": "piechart",
+        "gridPos": {
+          "x": 0,
+          "y": 18,
+          "w": 6,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "pledge_active_count{status=\"ACTIVE\"}",
+            "legendFormat": "Active",
+            "refId": "A"
+          },
+          {
+            "expr": "pledge_active_count{status=\"SUSPENDED\"}",
+            "legendFormat": "Suspended",
+            "refId": "B"
+          },
+          {
+            "expr": "pledge_active_count{status=\"CANCELLED\"}",
+            "legendFormat": "Cancelled",
+            "refId": "C"
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "Campaign Performance - Top 10 by Revenue",
+        "type": "bargauge",
+        "gridPos": {
+          "x": 6,
+          "y": 18,
+          "w": 18,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "topk(10, campaign_total_amount)",
+            "legendFormat": "{{campaign_name}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD"
+          }
+        }
+      },
+      {
+        "id": 13,
+        "title": "Donor Retention Rate",
+        "type": "gauge",
+        "gridPos": {
+          "x": 18,
+          "y": 18,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "(count(count_over_time(payment_transactions_total{status=\"success\"}[30d]) > 1) / count(count by (user_id) (payment_transactions_total))) * 100",
+            "legendFormat": "Retention Rate",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 30,
+                  "color": "yellow"
+                },
+                {
+                  "value": 50,
+                  "color": "green"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 14,
+        "title": "Donation Amount Distribution",
+        "type": "histogram",
+        "gridPos": {
+          "x": 0,
+          "y": 26,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "payment_amount_bucket",
+            "legendFormat": "${{le}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "title": "New Donors vs Returning Donors (30 days)",
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 26,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "count(count_over_time(payment_transactions_total{status=\"success\"}[30d]) == 1)",
+            "legendFormat": "New Donors",
+            "refId": "A"
+          },
+          {
+            "expr": "count(count_over_time(payment_transactions_total{status=\"success\"}[30d]) > 1)",
+            "legendFormat": "Returning Donors",
+            "refId": "B"
+          }
+        ]
+      },
+      {
+        "id": 16,
+        "title": "Campaign Goal Achievement Rate",
+        "type": "table",
+        "gridPos": {
+          "x": 0,
+          "y": 34,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "(campaign_total_amount / campaign_goal_amount) * 100",
+            "legendFormat": "{{campaign_name}}",
+            "refId": "A",
+            "format": "table"
+          }
+        ]
+      },
+      {
+        "id": 17,
+        "title": "Donation Frequency by Hour of Day",
+        "type": "heatmap",
+        "gridPos": {
+          "x": 12,
+          "y": 34,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "sum(increase(payment_transactions_total{status=\"success\"}[1h])) by (hour)",
+            "legendFormat": "Hour {{hour}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 18,
+        "title": "Failed Donation Recovery Rate",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 42,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "(sum(rate(pledge_payment_retry_total{status=\"success\"}[5m])) / sum(rate(payment_transactions_total{status=\"failed\"}[5m]))) * 100",
+            "legendFormat": "Recovery Rate %",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "percent"
+          }
+        ]
+      },
+      {
+        "id": 19,
+        "title": "Monthly Recurring Revenue Trend",
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 42,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "sum(pledge_monthly_amount{status=\"ACTIVE\"})",
+            "legendFormat": "MRR",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "currencyUSD"
+          }
+        ]
+      },
+      {
+        "id": 20,
+        "title": "Platform Health Score",
+        "type": "gauge",
+        "gridPos": {
+          "x": 0,
+          "y": 48,
+          "w": 24,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "((avg_over_time(up[5m]) * 30) + (((sum(rate(http_requests_total{status=~\"2..\"}[5m])) / sum(rate(http_requests_total[5m]))) * 100) * 0.4) + ((100 - ((histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) / 5) * 100)) * 0.3))",
+            "legendFormat": "Health Score",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 70,
+                  "color": "yellow"
+                },
+                {
+                  "value": 90,
+                  "color": "green"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  }
+}

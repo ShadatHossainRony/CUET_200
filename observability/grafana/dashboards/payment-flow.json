@@ -1,0 +1,486 @@
+{
+  "dashboard": {
+    "title": "CareForAll - Payment & Donation Flow",
+    "tags": ["careforall", "payment", "donation", "business"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 0,
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Total Donations Today",
+        "type": "stat",
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 6,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "sum(increase(payment_transactions_total{status=\"success\"}[24h]))",
+            "legendFormat": "Donations",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "blue"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Total Amount Raised Today",
+        "type": "stat",
+        "gridPos": {
+          "x": 6,
+          "y": 0,
+          "w": 6,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "sum(increase(payment_amount_total[24h]))",
+            "legendFormat": "Amount",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "green"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Payment Success Rate (Last Hour)",
+        "type": "gauge",
+        "gridPos": {
+          "x": 12,
+          "y": 0,
+          "w": 6,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "(sum(increase(payment_transactions_total{status=\"success\"}[1h])) / sum(increase(payment_transactions_total[1h]))) * 100",
+            "legendFormat": "Success Rate",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 90,
+                  "color": "yellow"
+                },
+                {
+                  "value": 97,
+                  "color": "green"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Failed Payments (Last Hour)",
+        "type": "stat",
+        "gridPos": {
+          "x": 18,
+          "y": 0,
+          "w": 6,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "sum(increase(payment_transactions_total{status=\"failed\"}[1h]))",
+            "legendFormat": "Failed",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "green"
+                },
+                {
+                  "value": 10,
+                  "color": "yellow"
+                },
+                {
+                  "value": 50,
+                  "color": "red"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Donation Flow - End to End Latency",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 6,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(donation_flow_duration_seconds_bucket[5m]))",
+            "legendFormat": "P95 End-to-End",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(donation_flow_duration_seconds_bucket[5m]))",
+            "legendFormat": "P50 End-to-End",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s",
+            "label": "Latency"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Payment Processing Stages",
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 6,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(payment_stage_duration_seconds_bucket{stage=\"validation\"}[5m]))",
+            "legendFormat": "Validation",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(payment_stage_duration_seconds_bucket{stage=\"authorization\"}[5m]))",
+            "legendFormat": "Authorization",
+            "refId": "B"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(payment_stage_duration_seconds_bucket{stage=\"capture\"}[5m]))",
+            "legendFormat": "Capture",
+            "refId": "C"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(payment_stage_duration_seconds_bucket{stage=\"event_publish\"}[5m]))",
+            "legendFormat": "Event Publish",
+            "refId": "D"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "One-Time vs Recurring Donations",
+        "type": "piechart",
+        "gridPos": {
+          "x": 0,
+          "y": 14,
+          "w": 8,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "sum(increase(payment_transactions_total{type=\"one_time\"}[24h]))",
+            "legendFormat": "One-Time",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(increase(payment_transactions_total{type=\"recurring\"}[24h]))",
+            "legendFormat": "Recurring",
+            "refId": "B"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Donation Amounts Distribution",
+        "type": "heatmap",
+        "gridPos": {
+          "x": 8,
+          "y": 14,
+          "w": 16,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "sum(rate(payment_amount_bucket[5m])) by (le)",
+            "legendFormat": "{{le}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Active Recurring Pledges",
+        "type": "stat",
+        "gridPos": {
+          "x": 0,
+          "y": 22,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "pledge_active_count{status=\"ACTIVE\"}",
+            "legendFormat": "Active",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Suspended Pledges",
+        "type": "stat",
+        "gridPos": {
+          "x": 6,
+          "y": 22,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "pledge_active_count{status=\"SUSPENDED\"}",
+            "legendFormat": "Suspended",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "green"
+                },
+                {
+                  "value": 10,
+                  "color": "yellow"
+                },
+                {
+                  "value": 50,
+                  "color": "red"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 11,
+        "title": "Pledge Payment Retry Attempts",
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 22,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "rate(pledge_payment_retry_total[5m])",
+            "legendFormat": "Attempt {{attempt}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "Webhook Processing Success Rate",
+        "type": "gauge",
+        "gridPos": {
+          "x": 0,
+          "y": 26,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "(sum(rate(webhook_processed_total{status=\"success\"}[5m])) / sum(rate(webhook_processed_total[5m]))) * 100",
+            "legendFormat": "Success Rate",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 95,
+                  "color": "yellow"
+                },
+                {
+                  "value": 99,
+                  "color": "green"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 13,
+        "title": "Duplicate Webhook Prevention (Idempotency)",
+        "type": "stat",
+        "gridPos": {
+          "x": 6,
+          "y": 26,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "sum(increase(webhook_duplicate_prevented_total[1h]))",
+            "legendFormat": "Duplicates Blocked",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "green"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 14,
+        "title": "Campaign Totals Update Lag",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 30,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(totals_update_lag_seconds_bucket[5m]))",
+            "legendFormat": "P95 Update Lag",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s",
+            "label": "Lag Time"
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "title": "Top 10 Campaigns by Donations",
+        "type": "table",
+        "gridPos": {
+          "x": 12,
+          "y": 30,
+          "w": 12,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "topk(10, campaign_total_amount)",
+            "legendFormat": "{{campaign_name}}",
+            "refId": "A",
+            "format": "table"
+          }
+        ]
+      },
+      {
+        "id": 16,
+        "title": "Payment State Transitions",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 36,
+          "w": 24,
+          "h": 6
+        },
+        "targets": [
+          {
+            "expr": "rate(payment_state_transition_total[5m])",
+            "legendFormat": "{{from_state}} → {{to_state}}",
+            "refId": "A"
+          }
+        ]
+      }
+    ]
+  }
+}
