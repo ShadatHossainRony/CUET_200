@@ -22,3 +22,35 @@
 2025-11-21 16:12:51:1251 [31merror[39m: [31mPayment processing error: Transaction numbers are only allowed on a replica set member or mongos[39m
 2025-11-21 16:12:51:1251 [31merror[39m: [31mProcess payment error: Transaction numbers are only allowed on a replica set member or mongos[39m
 2025-11-21 16:16:58:1658 [31merror[39m: [31mAll callback attempts failed for transaction: tx_iDJvvdBwd. Last error: Invalid URL[39m
+2025-11-21 16:18:47:1847 [31merror[39m: [31mError: /Users/mohammedsajidulislam/Desktop/avengers/wallet/src/views/success.ejs:144[39m
+[31m    142|       </div>[39m
+[31m    143|       <% } %>[39m
+[31m >> 144|       <% if (new_balance !== undefined) { %>[39m
+[31m    145|       <div class="detail-row">[39m
+[31m    146|         <span class="detail-label">New Balance</span>[39m
+[31m    147|         <span class="detail-value">৳<%= new_balance.toFixed(2) %></span>[39m
+
+[31mnew_balance is not defined[39m
+2025-11-21 16:18:49:1849 [31merror[39m: [31mError: /Users/mohammedsajidulislam/Desktop/avengers/wallet/src/views/success.ejs:138[39m
+[31m    136|         <span class="detail-value"><%= transaction_id %></span>[39m
+[31m    137|       </div>[39m
+[31m >> 138|       <% if (wallet_tx_ref) { %>[39m
+[31m    139|       <div class="detail-row">[39m
+[31m    140|         <span class="detail-label">Wallet Reference</span>[39m
+[31m    141|         <span class="detail-value"><%= wallet_tx_ref %></span>[39m
+
+[31mwallet_tx_ref is not defined[39m
+2025-11-21 17:02:20:220 [31merror[39m: [31mUnhandled Rejection at: [object Promise], reason: MongooseError: Connection.prototype.close() no longer accepts a callback[39m
+2025-11-21 17:04:35:435 [31merror[39m: [31mAll callback attempts failed for transaction: tx_aC93NtHUb. Last error: Invalid URL[39m
+2025-11-21 17:04:40:440 [31merror[39m: [31mError: /Users/mohammedsajidulislam/Desktop/avengers/wallet/src/views/success.ejs:138[39m
+[31m    136|         <span class="detail-value"><%= transaction_id %></span>[39m
+[31m    137|       </div>[39m
+[31m >> 138|       <% if (wallet_tx_ref) { %>[39m
+[31m    139|       <div class="detail-row">[39m
+[31m    140|         <span class="detail-label">Wallet Reference</span>[39m
+[31m    141|         <span class="detail-value"><%= wallet_tx_ref %></span>[39m
+
+[31mwallet_tx_ref is not defined[39m
+2025-11-21 17:07:12:712 [31merror[39m: [31mUnhandled Rejection at: [object Promise], reason: MongooseError: Connection.prototype.close() no longer accepts a callback[39m
+2025-11-21 17:07:31:731 [31merror[39m: [31mFailed to send success callback: Invalid URL[39m
+2025-11-21 17:07:56:756 [31merror[39m: [31mFailed to send success callback: Invalid URL[39m

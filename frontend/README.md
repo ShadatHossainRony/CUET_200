@@ -71,3 +71,14 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## Environment variables
+
+Create a `.env` (or `.env.local`) file in the `frontend` directory and set:
+
+```
+VITE_API_BASE_URL=http://localhost:8000
+VITE_PAYMENT_SERVICE_URL=http://localhost:8004
+```
+
+`VITE_PAYMENT_SERVICE_URL` is required for the Donate button to request a wallet payment session directly from the payment service without forcing the user to authenticate.

@@ -33,30 +33,24 @@ async function sendCallback(paySession, paymentData, type = 'success') {
     callback_url = paySession.callback_url;
   }
 
-  // Append transaction_id to URL as required by payment service
-  // Endpoints expect: /payment/success or /payment/fail with transaction_id in body or query
-  const urlWithTxn = callback_url.includes('?') 
-    ? `${callback_url}&transaction_id=${paySession.transaction_id}`
-    : `${callback_url}?transaction_id=${paySession.transaction_id}`;
-  
   const payload = {
-    transaction_id: paymentData.transaction_id,
+    transactionId: paymentData.transaction_id, // Changed to match payment service expectation
     amount: paymentData.amount,
-    user_phone: paymentData.user_phone,
-    user_id: paymentData.user_id,
+    userPhone: paymentData.user_phone,
+    userId: paymentData.user_id,
     status: type === 'success' ? 'SUCCESS' : 'FAILED',
-    wallet_tx_ref: paymentData.wallet_tx_ref || null,
-    failure_reason: paymentData.failure_reason || null,
+    walletTxRef: paymentData.wallet_tx_ref || null,
+    failureReason: paymentData.failure_reason || null,
     timestamp: new Date().toISOString(),
   };
 
-  logger.info(`Sending ${type} callback to: ${urlWithTxn}`, payload);
+  logger.info(`Sending ${type} callback to: ${callback_url}`, payload);
 
   let lastError = null;
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const response = await axios.post(urlWithTxn, payload, {
+      const response = await axios.patch(callback_url, payload, {
         headers: {
           'Content-Type': 'application/json',
           'X-Wallet-Signature': generateSignature(payload),

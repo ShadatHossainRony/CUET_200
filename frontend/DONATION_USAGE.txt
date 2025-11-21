@@ -1,0 +1,279 @@
+# Frontend Donation System - Usage Guide
+
+## 🎯 Overview
+
+The frontend provides a simple, user-friendly donation experience without requiring authentication. Users can donate to any campaign directly through the wallet payment system.
+
+## ✨ Features
+
+- ✅ **No Login Required** - Users can donate without creating an account
+- ✅ **Quick Donation** - Just campaign ID and amount needed
+- ✅ **Preset Amounts** - $25, $50, $100, $250 quick buttons
+- ✅ **Custom Amount** - Enter any amount
+- ✅ **Real-time Status** - Track donation progress
+- ✅ **Wallet Integration** - Secure payment through wallet service
+
+## 🚀 How to Use
+
+### 1. Start Required Services
+
+```bash
+# Terminal 1: Payment Service
+cd services/payment-service
+npm start  # Port 8004
+
+# Terminal 2: Wallet Service  
+cd wallet
+npm start  # Port 9001
+
+# Terminal 3: Frontend
+cd frontend
+npm run dev  # Port 5173
+```
+
+### 2. Access Frontend
+
+Open browser: `http://localhost:5173`
+
+### 3. Donate to a Campaign
+
+**Option A: From Campaign List**
+1. Navigate to "Browse Campaigns"
+2. Click "Donate Now" on any campaign card
+3. Enter amount on campaign detail page
+4. Click "Donate Now" button
+
+**Option B: From Campaign Detail**
+1. Click on any campaign
+2. See the donation form in right sidebar
+3. Choose preset amount ($25, $50, $100, $250) or enter custom amount
+4. Click "Donate Now"
+
+### 4. Complete Payment
+
+1. You'll be redirected to wallet payment page
+2. Enter test credentials:
+   - Phone: `1234567890`
+   - PIN: `1234`
+3. Click "Pay Now"
+4. See success message
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Create `.env` file in `frontend/` directory:
+
+```env
+VITE_PAYMENT_SERVICE_URL=http://localhost:8004
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+### API Endpoints Used
+
+**Payment Service (8004):**
+- `POST /payment/process` - Initiate donation
+- `GET /payment/status/:transactionId` - Check payment status
+
+**Wallet Service (9001):**
+- `POST /wallet/pay/:transactionId` - Complete payment
+
+## 📱 User Flow
+
+```
+User on Campaign Page
+    ↓
+Enter Donation Amount
+    ↓
+Click "Donate Now"
+    ↓
+Frontend → POST /payment/process
+    ↓
+Get redirectUrl to wallet
+    ↓
+Redirect to Wallet Payment Page
+    ↓
+User enters phone + PIN
+    ↓
+Wallet processes payment
+    ↓
+User sees success/failure page
+```
+
+## 🧪 Testing
+
+### Quick Test
+
+1. **Start all services** (payment, wallet, frontend)
+
+2. **Open browser**: `http://localhost:5173`
+
+3. **Navigate to any campaign**
+
+4. **Enter amount**: 100
+
+5. **Click "Donate Now"**
+
+6. **On wallet page, enter**:
+   - Phone: `1234567890`
+   - PIN: `1234`
+
+7. **Verify success message**
+
+### Test Script
+
+```bash
+# Run from frontend directory
+./test-donation.sh
+```
+
+This will test the API directly.
+
+## 🎨 UI Components
+
+### Campaign Card
+- Shows campaign details
+- "Donate Now" button → goes to campaign detail
+
+### Campaign Detail - Donation Form
+- Amount input field
+- Preset amount buttons ($25, $50, $100, $250)
+- "Donate Now" action button
+- Error handling
+- Loading state during redirect
+
+### Code Example
+
+```typescript
+// In CampaignDetail.tsx
+const handleDonate = async () => {
+  try {
+    const session = await createDonationSession({
+      campaignId: "campaign_education_001",
+      amount: 100
+    });
+    
+    // Redirect to wallet payment page
+    window.location.href = session.redirectUrl;
+  } catch (error) {
+    // Show error message
+    setDonationError(error.message);
+  }
+};
+```
+
+## 🔄 Payment Flow Code
+
+```typescript
+// lib/api.ts
+export async function createDonationSession(payload: {
+  campaignId: string;
+  amount: number;
+}): Promise<DonationSessionResponse> {
+  const response = await fetch('http://localhost:8004/payment/process', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  
+  const data = await response.json();
+  return data; // { success, redirectUrl }
+}
+```
+
+## 🎯 Key Files
+
+### Pages
+- `src/pages/Campaigns.tsx` - Campaign listing
+- `src/pages/CampaignDetail.tsx` - Campaign detail with donation form
+- `src/pages/DonationStatus.tsx` - Payment success/failure page
+
+### Components
+- `src/components/campaigns/CampaignCard.tsx` - Campaign card with donate button
+
+### API
+- `src/lib/api.ts` - API client and `createDonationSession()` function
+
+## 🐛 Troubleshooting
+
+### "Unable to start donation"
+
+**Cause**: Payment service not running or wrong URL
+
+**Fix**:
+1. Check payment service: `curl http://localhost:8004/health`
+2. Verify `.env` has correct `VITE_PAYMENT_SERVICE_URL`
+3. Restart frontend: `npm run dev`
+
+### "Failed to create payment session"
+
+**Cause**: Wallet service not reachable
+
+**Fix**:
+1. Check wallet service: `curl http://localhost:9001/health`
+2. Check payment service logs
+3. Verify `WALLET_SERVICE_URL` in payment service `.env`
+
+### Amount validation error
+
+**Issue**: "Enter a valid donation amount"
+
+**Fix**: Ensure amount is > 0 and numeric
+
+### CORS errors
+
+**Cause**: Payment service not allowing frontend origin
+
+**Fix**: Payment service should have CORS enabled for `http://localhost:5173`
+
+## 📊 Data Flow
+
+### Request to Payment Service
+```json
+POST /payment/process
+{
+  "campaignId": "campaign_education_001",
+  "amount": 100
+}
+```
+
+### Response from Payment Service
+```json
+{
+  "success": true,
+  "message": "Payment request accepted",
+  "redirectUrl": "http://localhost:9001/wallet/pay/txn_xxxxx"
+}
+```
+
+### User redirected to Wallet
+```
+http://localhost:9001/wallet/pay/txn_xxxxx
+```
+
+### After payment completion
+User sees success page in wallet or gets redirected back to frontend
+
+## ✅ Checklist
+
+Before testing donations:
+
+- [ ] MongoDB running
+- [ ] Payment service running on 8004
+- [ ] Wallet service running on 9001
+- [ ] Frontend running on 5173
+- [ ] `.env` file created with correct URLs
+- [ ] Test user exists in wallet database
+- [ ] Test user has sufficient balance
+
+## 🎉 Success!
+
+When everything works:
+1. User clicks "Donate Now"
+2. Gets redirected to wallet
+3. Enters credentials
+4. Sees success message
+5. Balance deducted
+6. Transaction recorded
+
+That's it! Simple, fast, and secure donations without authentication.

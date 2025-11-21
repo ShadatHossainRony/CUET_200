@@ -1,4 +1,6 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api-gateway.careforall.com';
+const PAYMENT_SERVICE_BASE_URL =
+  import.meta.env.VITE_PAYMENT_SERVICE_URL || 'http://localhost:8004';
 
 interface ApiError {
   message: string;
@@ -171,3 +173,35 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
+
+interface DonationSessionResponse {
+  success: boolean;
+  redirectUrl?: string;
+  message?: string;
+  error?: string;
+}
+
+export async function createDonationSession(payload: {
+  campaignId: string;
+  amount: number;
+}): Promise<DonationSessionResponse> {
+  try {
+    const response = await fetch(`${PAYMENT_SERVICE_BASE_URL}/payment/process`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = (await response.json()) as DonationSessionResponse;
+    if (!response.ok) {
+      throw new Error(data.error || 'Unable to start donation');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Donation session failed:', error);
+    throw error;
+  }
+}

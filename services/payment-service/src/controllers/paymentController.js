@@ -1,6 +1,9 @@
-const { default: axios } = require('axios');
+const axios = require('axios');
 const Transaction = require('../models/Transaction');
 const { queueNotification } = require('../config/queue');
+
+const WALLET_SERVICE_URL =
+    process.env.WALLET_SERVICE_URL || 'http://localhost:9001';
 
 /**
  * Process Payment Request
@@ -25,13 +28,18 @@ async function processPaymentRequest(req, res) {
             });
         }
 
-        const walletRes = await axios.post("http://localhost:9001/wallet/pay", { amount })
-        console.log(JSON.stringify(walletRes.data));
+        const walletRes = await axios.post(`${WALLET_SERVICE_URL}/wallet/pay`, {
+            amount,
+            metadata: {
+                campaignId,
+            },
+        });
 
-        let metadata = {}
-        const user = req.user;
-        if (user) {
-            metadata.userId = Date.now().toString();
+        const metadata = {
+            campaignId,
+        };
+        if (req.user?.id) {
+            metadata.userId = req.user.id;
         }
 
         // Create transaction record with pending status
@@ -53,20 +61,39 @@ async function processPaymentRequest(req, res) {
             message: 'Payment request accepted and queued for processing',
             redirectUrl,
         });
-    } catch (err) {
-        console.error('Payment request error:', err);
+    } catch (error) {
+        // Log detailed error info (including nested AggregateError from Axios)
+        const errInfo = {
+            message: error?.message,
+            
+            code: error?.code,
+            url: error?.config?.url,
+            method: error?.config?.method,
+            requestHost: error?.request?._options?.hostname || error?.request?._options?.host,
+            stack: error?.stack,
+            errors: error?.errors || (error?.cause && error.cause.errors) || undefined,
+        };
+        console.error('Payment request error (detailed):', JSON.stringify(errInfo, null, 2));
 
         return res.status(500).json({
             success: false,
             error: 'Internal server error',
-            message: err.message,
+            message: error.message,
         });
     }
 }
 
 async function successfullTransaction(req, res) {
     try {
-        const { transactionId } = req.body()
+        const { transaction_id:transactionId } = req.body || {};
+
+        if (!transactionId) {
+            return res.status(400).json({
+                success: false,
+                error: 'transactionId is required',
+            });
+        }
+
         const transaction = await Transaction.findOne({ transactionId });
         if (!transaction) {
             return res.status(404).json({
@@ -77,12 +104,12 @@ async function successfullTransaction(req, res) {
         transaction.status = 'completed';
         await transaction.save();
 
-        queueNotification.successTransaction({
+        await queueNotification.successTransaction({
             success: true,
             transactionId: transaction.transactionId,
             campaignId: transaction.campaignId,
             amount: transaction.amount,
-        })
+        });
 
         console.log(`✅ Transaction Successful`)
 
@@ -91,19 +118,27 @@ async function successfullTransaction(req, res) {
             message: 'Transaction marked as completed',
         });
     } catch (error) {
-        console.error('Error:[Payment Successfull]:', err);
+        console.error('Error:[Payment Successfull]:', error);
 
         return res.status(500).json({
             success: false,
             error: 'Internal server error',
-            message: err.message,
+            message: error.message,
         });
     }
 }
 
 async function failureTransaction(req, res) {
     try {
-        const { transactionId } = req.body()
+        const { transaction_id:transactionId, failureReason } = req.body || {};
+
+        if (!transactionId) {
+            return res.status(400).json({
+                success: false,
+                error: 'transactionId is required',
+            });
+        }
+
         const transaction = await Transaction.findOne({ transactionId });
         if (!transaction) {
             return res.status(404).json({
@@ -114,9 +149,12 @@ async function failureTransaction(req, res) {
         transaction.status = 'failed';
         await transaction.save();
 
-        queueNotification.failedTransaction({
+        await queueNotification.failedTransaction({
             success: false,
             transactionId: transaction.transactionId,
+            campaignId: transaction.campaignId,
+            amount: transaction.amount,
+            failureReason: failureReason || 'unknown',
         })
 
         console.log(`❌client Transaction Failed`)
@@ -125,12 +163,12 @@ async function failureTransaction(req, res) {
             message: 'Transaction marked as completed',
         });
     } catch (error) {
-        console.error('Error:[Payment Failed]:', err);
+        console.error('Error:[Payment Failed]:', error.message);
 
         return res.status(500).json({
             success: false,
             error: 'Internal server error',
-            message: err.message,
+            message: error.message,
         });
     }
 }

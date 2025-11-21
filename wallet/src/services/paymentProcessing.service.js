@@ -10,12 +10,6 @@ const PaySession = require('../models/paySession.model');
 const { generateWalletTxRef } = require('../utils/idGen');
 const logger = require('../utils/logger');
 
-/**
- * Process payment (no transactions - simple for standalone MongoDB)
- * @param {Object} paySession - Pay session document
- * @param {Object} user - User document
- * @returns {Promise<Object>} Result with success status and data
- */
 function supportsTransactions() {
   const connection = mongoose.connection;
   if (!connection?.client) {
@@ -33,15 +27,25 @@ function supportsTransactions() {
   );
 }
 
+/**
+ * Process payment atomically when replica set is available, otherwise fall back
+ * to best-effort operations without sessions (still guarded by $gte checks).
+ */
 async function processPayment(paySession, user) {
-  const session = await mongoose.startSession();
-  
+  const useTransactions = supportsTransactions();
+  const session = useTransactions ? await mongoose.startSession() : null;
+  const sessionOpts = session ? { session } : undefined;
+
   try {
-    session.startTransaction();
+    if (session) {
+      session.startTransaction();
+    }
 
     // Check if already processed (idempotency)
     if (paySession.status === 'SUCCESS') {
-      await session.abortTransaction();
+      if (session) {
+        await session.abortTransaction();
+      }
       return {
         success: true,
         alreadyProcessed: true,
@@ -56,7 +60,9 @@ async function processPayment(paySession, user) {
 
     // Check balance
     if (!user.hasSufficientBalance(paySession.amount)) {
-      await session.abortTransaction();
+      if (session) {
+        await session.abortTransaction();
+      }
       return {
         success: false,
         reason: 'INSUFFICIENT_BALANCE',
@@ -79,12 +85,14 @@ async function processPayment(paySession, user) {
       },
       {
         new: true,
-        session,
+        ...(session && { session }),
       }
     );
 
     if (!updatedUser) {
-      await session.abortTransaction();
+      if (session) {
+        await session.abortTransaction();
+      }
       return {
         success: false,
         reason: 'DEDUCTION_FAILED',
@@ -111,7 +119,7 @@ async function processPayment(paySession, user) {
       },
     });
 
-    await transaction.save({ session });
+    await transaction.save(sessionOpts);
 
     // Update pay session
     paySession.status = 'SUCCESS';
@@ -119,10 +127,12 @@ async function processPayment(paySession, user) {
     paySession.userPhone = user.phone;
     paySession.wallet_tx_ref = walletTxRef;
     paySession.completedAt = new Date();
-    await paySession.save({ session });
+    await paySession.save(sessionOpts);
 
     // Commit transaction
-    await session.commitTransaction();
+    if (session) {
+      await session.commitTransaction();
+    }
 
     logger.info(`Payment processed successfully: ${paySession.transaction_id}, User: ${user.phone}, Amount: ${paySession.amount}`);
 
@@ -141,11 +151,15 @@ async function processPayment(paySession, user) {
     };
 
   } catch (error) {
-    await session.abortTransaction();
+    if (session) {
+      await session.abortTransaction();
+    }
     logger.error(`Payment processing error: ${error.message}`);
     throw error;
   } finally {
-    session.endSession();
+    if (session) {
+      session.endSession();
+    }
   }
 }
 
@@ -160,33 +174,37 @@ async function markPaymentFailed(paySession, reason) {
   paySession.failureReason = reason;
   paySession.completedAt = new Date();
   await paySession.save();
-  
+
   logger.info(`Payment marked as failed: ${paySession.transaction_id}, Reason: ${reason}`);
 }
 
-/**
- * Process topup (no transactions - simple for standalone MongoDB)
- * @param {string} phone - User phone number
- * @param {number} amount - Topup amount
- * @returns {Promise<Object>} Result with new balance and transaction ID
- */
 async function processTopup(phone, amount) {
-  const session = await mongoose.startSession();
-  
-  try {
-    session.startTransaction();
+  const useTransactions = supportsTransactions();
+  const session = useTransactions ? await mongoose.startSession() : null;
+  const sessionOpts = session ? { session } : undefined;
 
-    const user = await User.findOne({ phone }).session(session);
+  try {
+    if (session) {
+      session.startTransaction();
+    }
+
+    const userQuery = User.findOne({ phone });
+    if (session) {
+      userQuery.session(session);
+    }
+    const user = await userQuery;
     if (!user) {
-      await session.abortTransaction();
+      if (session) {
+        await session.abortTransaction();
+      }
       throw new Error('User not found');
     }
 
     const previousBalance = user.balance;
-    
+
     // Increase balance
     user.balance += amount;
-    await user.save({ session });
+    await user.save(sessionOpts);
 
     // Create transaction record
     const walletTxRef = generateWalletTxRef();
@@ -197,29 +215,35 @@ async function processTopup(phone, amount) {
       status: 'SUCCESS',
       userId: user._id,
       previousBalance,
-      newBalance: updatedUser.balance,
+      newBalance: user.balance,
       completedAt: new Date(),
       meta: { phone },
     });
 
-    await transaction.save({ session });
+    await transaction.save(sessionOpts);
 
-    await session.commitTransaction();
+    if (session) {
+      await session.commitTransaction();
+    }
 
     logger.info(`Topup processed: User: ${phone}, Amount: ${amount}, New Balance: ${user.balance}`);
 
     return {
-      balance: updatedUser.balance,
+      balance: user.balance,
       transactionId: walletTxRef,
       amount,
     };
 
   } catch (error) {
-    await session.abortTransaction();
+    if (session) {
+      await session.abortTransaction();
+    }
     logger.error(`Topup processing error: ${error.message}`);
     throw error;
   } finally {
-    session.endSession();
+    if (session) {
+      session.endSession();
+    }
   }
 }
 

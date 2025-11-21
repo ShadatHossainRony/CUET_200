@@ -10,6 +10,7 @@ const { generateTransactionId } = require('../utils/idGen');
 const { processPayment, markPaymentFailed, processTopup } = require('../services/paymentProcessing.service');
 const { sendCallback, sendFailureCallback } = require('../services/callback.service');
 const logger = require('../utils/logger');
+const axios = require("axios")
 
 const PAYMENT_SERVICE_URL = process.env.PAYMENT_SERVICE_URL;
 const TRANSACTION_EXPIRY_HOURS = parseInt(process.env.TRANSACTION_EXPIRY_HOURS) || 1;
@@ -181,6 +182,14 @@ async function processPaymentSubmission(req, res) {
     const canProcess = paySession.canProcess();
     if (!canProcess.valid) {
       if (paySession.status === 'SUCCESS') {
+        const success_webhook = `${PAYMENT_SERVICE_URL}/payment/success`;
+        try {
+          await axios.patch(success_webhook, { transaction_id });
+          logger.info(`Success callback sent for ${transaction_id}`);
+        } catch (error) {
+          logger.error(`Failed to send success callback: ${error.message}`);
+        }
+
         // Already paid - show success (idempotency)
         return res.render('success', {
           title: 'Payment Already Completed',
@@ -189,6 +198,14 @@ async function processPaymentSubmission(req, res) {
           amount: paySession.amount,
           wallet_tx_ref: paySession.wallet_tx_ref,
         });
+      }
+
+      const fail_webhook = `${PAYMENT_SERVICE_URL}/payment/fail`;
+      try {
+        await axios.patch(fail_webhook, { transaction_id, failureReason: canProcess.reason });
+        logger.info(`Failure callback sent for ${transaction_id}`);
+      } catch (error) {
+        logger.error(`Failed to send failure callback: ${error.message}`);
       }
 
       return res.render('failed', {
@@ -204,6 +221,16 @@ async function processPaymentSubmission(req, res) {
 
     if (!user) {
       await markPaymentFailed(paySession, 'USER_NOT_FOUND');
+
+      // Send failure callback
+      const fail_webhook = `${PAYMENT_SERVICE_URL}/payment/fail`;
+      try {
+        await axios.patch(fail_webhook, { transaction_id, failureReason: 'USER_NOT_FOUND' });
+        logger.info(`Failure callback sent for ${transaction_id}`);
+      } catch (error) {
+        logger.error(`Failed to send failure callback: ${error.message}`);
+      }
+
       return res.render('failed', {
         title: 'Payment Failed',
         message: 'Invalid phone number or PIN',
@@ -214,6 +241,16 @@ async function processPaymentSubmission(req, res) {
 
     if (!user.isActive) {
       await markPaymentFailed(paySession, 'ACCOUNT_INACTIVE');
+
+      // Send failure callback
+      const fail_webhook = `${PAYMENT_SERVICE_URL}/payment/fail`;
+      try {
+        await axios.patch(fail_webhook, { transaction_id, failureReason: 'ACCOUNT_INACTIVE' });
+        logger.info(`Failure callback sent for ${transaction_id}`);
+      } catch (error) {
+        logger.error(`Failed to send failure callback: ${error.message}`);
+      }
+
       return res.render('failed', {
         title: 'Payment Failed',
         message: 'Account is inactive',
@@ -228,6 +265,16 @@ async function processPaymentSubmission(req, res) {
     if (!isValidPin) {
       logger.warn(`Failed payment attempt: Invalid PIN for ${phone}, Transaction: ${transaction_id}`);
       await markPaymentFailed(paySession, 'INVALID_PIN');
+
+      // Send failure callback
+      const fail_webhook = `${PAYMENT_SERVICE_URL}/payment/fail`;
+      try {
+        await axios.patch(fail_webhook, { transaction_id, failureReason: 'INVALID_PIN' });
+        logger.info(`Failure callback sent for ${transaction_id}`);
+      } catch (error) {
+        logger.error(`Failed to send failure callback: ${error.message}`);
+      }
+
       return res.render('failed', {
         title: 'Payment Failed',
         message: 'Invalid phone number or PIN',
@@ -241,12 +288,16 @@ async function processPaymentSubmission(req, res) {
 
     if (!result.success) {
       await markPaymentFailed(paySession, result.reason);
-      
-      // Send failure callback asynchronously (don't wait for it)
-      sendFailureCallback(paySession, result.reason).catch(error => {
-        logger.error(`Failure callback failed for ${transaction_id}: ${error.message}`);
-      });
-      
+
+      // Send failure callback directly
+      const fail_webhook = `${PAYMENT_SERVICE_URL}/payment/fail`;
+      try {
+        await axios.patch(fail_webhook, { transaction_id, failureReason: result.reason });
+        logger.info(`Failure callback sent for ${transaction_id}`);
+      } catch (error) {
+        logger.error(`Failed to send failure callback: ${error.message}`);
+      }
+
       return res.render('failed', {
         title: 'Payment Failed',
         message: result.message,
@@ -257,12 +308,15 @@ async function processPaymentSubmission(req, res) {
       });
     }
 
-    // Payment successful - send success callback (don't wait for it)
+    // Payment successful - send success callback
     if (!result.alreadyProcessed) {
-      // Send callback asynchronously
-      sendCallback(paySession, result.data, 'success').catch(error => {
-        logger.error(`Success callback failed for ${transaction_id}: ${error.message}`);
-      });
+      const success_webhook = `${PAYMENT_SERVICE_URL}/payment/success`;
+      try {
+        await axios.patch(success_webhook, { transaction_id });
+        logger.info(`Success callback sent for ${transaction_id}`);
+      } catch (error) {
+        logger.error(`Failed to send success callback: ${error.message}`);
+      }
     }
 
     // Show success page

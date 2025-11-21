@@ -20,14 +20,18 @@ import {
   Clock
 } from "lucide-react";
 import educationImg from "@/assets/campaign-education.jpg";
+import { createDonationSession } from "@/lib/api";
 
 export default function CampaignDetail() {
   const { id } = useParams();
   const [donationAmount, setDonationAmount] = useState("");
+  const [isProcessingDonation, setIsProcessingDonation] = useState(false);
+  const [donationError, setDonationError] = useState<string | null>(null);
 
   // Mock campaign data
+  const campaignId = id ?? "demo-campaign";
   const campaign = {
-    id,
+    id: campaignId,
     title: "Help Build a School in Rural India",
     description: "We are raising funds to build a new school building that will serve over 500 children in a rural community in India. The existing structure is in poor condition and lacks basic facilities.",
     fullStory: `This campaign aims to transform education for children in a remote village in rural India. 
@@ -250,7 +254,10 @@ export default function CampaignDetail() {
                           type="number"
                           placeholder="50"
                           value={donationAmount}
-                          onChange={(e) => setDonationAmount(e.target.value)}
+                          onChange={(e) => {
+                            setDonationAmount(e.target.value);
+                            setDonationError(null);
+                          }}
                           className="pl-7 text-lg"
                         />
                       </div>
@@ -260,7 +267,10 @@ export default function CampaignDetail() {
                             key={amount}
                             variant="outline"
                             size="sm"
-                            onClick={() => setDonationAmount(amount.toString())}
+                            onClick={() => {
+                              setDonationAmount(amount.toString());
+                              setDonationError(null);
+                            }}
                           >
                             ${amount}
                           </Button>
@@ -268,8 +278,55 @@ export default function CampaignDetail() {
                       </div>
                     </div>
 
-                    <Button className="w-full gradient_accent text-white" size="lg">
-                      Donate Now
+                    {donationError && (
+                      <p className="text-sm text-destructive">{donationError}</p>
+                    )}
+
+                    <Button
+                      className="w-full gradient_accent text-white"
+                      size="lg"
+                      onClick={async () => {
+                        const amountValue = Number(donationAmount);
+                        if (!amountValue || amountValue <= 0) {
+                          setDonationError("Enter a valid donation amount");
+                          return;
+                        }
+
+                        setDonationError(null);
+                        setIsProcessingDonation(true);
+
+                        try {
+                          const session = await createDonationSession({
+                            campaignId,
+                            amount: amountValue,
+                          });
+
+                          if (!session.redirectUrl) {
+                            throw new Error(
+                              session.message ||
+                                "Donation link unavailable, please try again."
+                            );
+                          }
+
+                            // Open external payment/checkout in a new tab, but navigate in-place for same-origin links
+                            if (session.redirectUrl.startsWith(window.location.origin)) {
+                            window.location.href = session.redirectUrl;
+                            } else {
+                            window.open(session.redirectUrl, "_blank", "noopener,noreferrer");
+                            }
+                        } catch (error) {
+                          setDonationError(
+                            error instanceof Error
+                              ? error.message
+                              : "Unable to start donation"
+                          );
+                        } finally {
+                          setIsProcessingDonation(false);
+                        }
+                      }}
+                      disabled={isProcessingDonation}
+                    >
+                      {isProcessingDonation ? "Redirecting..." : "Donate Now"}
                     </Button>
 
                     <Button variant="outline" className="w-full" asChild>

@@ -80,3 +80,80 @@
 2025-11-21 16:18:32:1832 [32minfo[39m: [32mConnected to MongoDB[39m
 2025-11-21 16:18:32:1832 [32minfo[39m: [32mWallet Gateway running on port 9001[39m
 2025-11-21 16:18:32:1832 [32minfo[39m: [32mEnvironment: development[39m
+2025-11-21 16:18:47:1847 [31merror[39m: [31mError: /Users/mohammedsajidulislam/Desktop/avengers/wallet/src/views/success.ejs:144[39m
+[31m    142|       </div>[39m
+[31m    143|       <% } %>[39m
+[31m >> 144|       <% if (new_balance !== undefined) { %>[39m
+[31m    145|       <div class="detail-row">[39m
+[31m    146|         <span class="detail-label">New Balance</span>[39m
+[31m    147|         <span class="detail-value">৳<%= new_balance.toFixed(2) %></span>[39m
+
+[31mnew_balance is not defined[39m
+2025-11-21 16:18:47:1847 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:10:18:47 +0000] "POST /wallet/pay/tx_iDJvvdBwd HTTP/1.1" 500 429 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 16:18:49:1849 [31merror[39m: [31mError: /Users/mohammedsajidulislam/Desktop/avengers/wallet/src/views/success.ejs:138[39m
+[31m    136|         <span class="detail-value"><%= transaction_id %></span>[39m
+[31m    137|       </div>[39m
+[31m >> 138|       <% if (wallet_tx_ref) { %>[39m
+[31m    139|       <div class="detail-row">[39m
+[31m    140|         <span class="detail-label">Wallet Reference</span>[39m
+[31m    141|         <span class="detail-value"><%= wallet_tx_ref %></span>[39m
+
+[31mwallet_tx_ref is not defined[39m
+2025-11-21 16:18:49:1849 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:10:18:49 +0000] "GET /wallet/pay/tx_iDJvvdBwd HTTP/1.1" 500 464 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 16:30:51:3051 [32minfo[39m: [32mConnected to MongoDB[39m
+2025-11-21 16:30:51:3051 [32minfo[39m: [32mWallet Gateway running on port 9001[39m
+2025-11-21 16:30:51:3051 [32minfo[39m: [32mEnvironment: development[39m
+2025-11-21 16:31:03:313 [32minfo[39m: [32mConnected to MongoDB[39m
+2025-11-21 16:31:03:313 [32minfo[39m: [32mWallet Gateway running on port 9001[39m
+2025-11-21 16:31:03:313 [32minfo[39m: [32mEnvironment: development[39m
+2025-11-21 16:33:49:3349 [32minfo[39m: [32mConnected to MongoDB[39m
+2025-11-21 16:33:49:3349 [32minfo[39m: [32mWallet Gateway running on port 9001[39m
+2025-11-21 16:33:49:3349 [32minfo[39m: [32mEnvironment: development[39m
+2025-11-21 17:01:18:118 [32minfo[39m: [32mConnected to MongoDB[39m
+2025-11-21 17:01:18:118 [32minfo[39m: [32mWallet Gateway running on port 9001[39m
+2025-11-21 17:01:18:118 [32minfo[39m: [32mEnvironment: development[39m
+2025-11-21 17:02:20:220 [32minfo[39m: [32mSIGINT received, shutting down gracefully[39m
+2025-11-21 17:02:34:234 [32minfo[39m: [32mConnected to MongoDB[39m
+2025-11-21 17:02:34:234 [32minfo[39m: [32mWallet Gateway running on port 9001[39m
+2025-11-21 17:02:34:234 [32minfo[39m: [32mEnvironment: development[39m
+2025-11-21 17:03:18:318 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:11:03:18 +0000] "GET /health HTTP/1.1" 200 81 "-" "curl/8.7.1"[39m
+2025-11-21 17:03:41:341 [32minfo[39m: [32mPayment session created: tx_mUGvGCmMB, Amount: 100[39m
+2025-11-21 17:03:41:341 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:11:03:41 +0000] "POST /wallet/pay HTTP/1.1" 201 131 "-" "axios/1.13.2"[39m
+2025-11-21 17:04:07:47 [32minfo[39m: [32mPayment session created: tx_aC93NtHUb, Amount: 50[39m
+2025-11-21 17:04:07:47 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:11:04:07 +0000] "POST /wallet/pay HTTP/1.1" 201 131 "-" "axios/1.13.2"[39m
+2025-11-21 17:04:07:47 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:11:04:07 +0000] "GET /wallet/pay/tx_aC93NtHUb HTTP/1.1" 200 4497 "http://localhost:8081/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 17:04:32:432 [32minfo[39m: [32mPayment processed successfully: tx_aC93NtHUb, User: 01700000001, Amount: 50[39m
+2025-11-21 17:04:32:432 [32minfo[39m: [32mSending success callback to: undefined/payment/success[39m
+2025-11-21 17:04:32:432 [33mwarn[39m: [33mCallback attempt 1/3 failed: Invalid URL[39m
+2025-11-21 17:04:32:432 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:11:04:32 +0000] "POST /wallet/pay/tx_aC93NtHUb HTTP/1.1" 200 3971 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 17:04:32:432 [32minfo[39m: [32mRetrying callback in 1000ms...[39m
+2025-11-21 17:04:33:433 [33mwarn[39m: [33mCallback attempt 2/3 failed: Invalid URL[39m
+2025-11-21 17:04:33:433 [32minfo[39m: [32mRetrying callback in 2000ms...[39m
+2025-11-21 17:04:35:435 [33mwarn[39m: [33mCallback attempt 3/3 failed: Invalid URL[39m
+2025-11-21 17:04:35:435 [31merror[39m: [31mAll callback attempts failed for transaction: tx_aC93NtHUb. Last error: Invalid URL[39m
+2025-11-21 17:04:40:440 [31merror[39m: [31mError: /Users/mohammedsajidulislam/Desktop/avengers/wallet/src/views/success.ejs:138[39m
+[31m    136|         <span class="detail-value"><%= transaction_id %></span>[39m
+[31m    137|       </div>[39m
+[31m >> 138|       <% if (wallet_tx_ref) { %>[39m
+[31m    139|       <div class="detail-row">[39m
+[31m    140|         <span class="detail-label">Wallet Reference</span>[39m
+[31m    141|         <span class="detail-value"><%= wallet_tx_ref %></span>[39m
+
+[31mwallet_tx_ref is not defined[39m
+2025-11-21 17:04:40:440 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:11:04:40 +0000] "GET /wallet/pay/tx_aC93NtHUb HTTP/1.1" 500 464 "http://localhost:8081/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 17:07:12:712 [32minfo[39m: [32mSIGTERM received, shutting down gracefully[39m
+2025-11-21 17:07:14:714 [32minfo[39m: [32mConnected to MongoDB[39m
+2025-11-21 17:07:14:714 [32minfo[39m: [32mWallet Gateway running on port 9001[39m
+2025-11-21 17:07:14:714 [32minfo[39m: [32mEnvironment: development[39m
+2025-11-21 17:07:25:725 [32minfo[39m: [32mPayment session created: tx_O5vKwnvQh, Amount: 50[39m
+2025-11-21 17:07:25:725 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:11:07:25 +0000] "POST /wallet/pay HTTP/1.1" 201 131 "-" "axios/1.13.2"[39m
+2025-11-21 17:07:25:725 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:11:07:25 +0000] "GET /wallet/pay/tx_O5vKwnvQh HTTP/1.1" 200 4497 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 17:07:31:731 [32minfo[39m: [32mPayment processed successfully: tx_O5vKwnvQh, User: 01700000001, Amount: 50[39m
+2025-11-21 17:07:31:731 [31merror[39m: [31mFailed to send success callback: Invalid URL[39m
+2025-11-21 17:07:31:731 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:11:07:31 +0000] "POST /wallet/pay/tx_O5vKwnvQh HTTP/1.1" 200 3971 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 17:07:49:749 [32minfo[39m: [32mPayment session created: tx_aMrO64rGR, Amount: 100[39m
+2025-11-21 17:07:49:749 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:11:07:49 +0000] "POST /wallet/pay HTTP/1.1" 201 131 "-" "axios/1.13.2"[39m
+2025-11-21 17:07:50:750 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:11:07:50 +0000] "GET /wallet/pay/tx_aMrO64rGR HTTP/1.1" 200 4498 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 17:07:56:756 [32minfo[39m: [32mPayment processed successfully: tx_aMrO64rGR, User: 01700000001, Amount: 100[39m
+2025-11-21 17:07:56:756 [31merror[39m: [31mFailed to send success callback: Invalid URL[39m
+2025-11-21 17:07:56:756 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:11:07:56 +0000] "POST /wallet/pay/tx_aMrO64rGR HTTP/1.1" 200 3972 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
