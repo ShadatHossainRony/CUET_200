@@ -1,0 +1,14 @@
+com\fundraising\campaign\repository\CampaignRepository.class
+com\fundraising\campaign\event\RedisEventPublisher.class
+com\fundraising\campaign\dto\UpdateCampaignRequest.class
+com\fundraising\campaign\event\EventPublisher.class
+com\fundraising\campaign\controller\CampaignController.class
+com\fundraising\campaign\config\RedisConfig.class
+com\fundraising\campaign\controller\GlobalExceptionHandler$ErrorResponse.class
+com\fundraising\campaign\dto\CreateCampaignRequest.class
+com\fundraising\campaign\service\CampaignService.class
+com\fundraising\campaign\CampaignServiceApplication.class
+com\fundraising\campaign\domain\Campaign.class
+com\fundraising\campaign\dto\CampaignResponse.class
+com\fundraising\campaign\controller\GlobalExceptionHandler.class
+com\fundraising\campaign\domain\CampaignStatus.class
