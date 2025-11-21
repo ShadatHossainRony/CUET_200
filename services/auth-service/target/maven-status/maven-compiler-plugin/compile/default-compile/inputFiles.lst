@@ -1,0 +1,9 @@
+E:\api\auth-service\src\main\java\com\authservice\AuthServiceApplication.java
+E:\api\auth-service\src\main\java\com\authservice\controller\AuthController.java
+E:\api\auth-service\src\main\java\com\authservice\dto\LoginRequest.java
+E:\api\auth-service\src\main\java\com\authservice\dto\RegisterRequest.java
+E:\api\auth-service\src\main\java\com\authservice\model\User.java
+E:\api\auth-service\src\main\java\com\authservice\repository\UserRepository.java
+E:\api\auth-service\src\main\java\com\authservice\service\AuthService.java
+E:\api\auth-service\src\main\java\com\authservice\service\EventPublisher.java
+E:\api\auth-service\src\main\java\com\authservice\service\JwtService.java

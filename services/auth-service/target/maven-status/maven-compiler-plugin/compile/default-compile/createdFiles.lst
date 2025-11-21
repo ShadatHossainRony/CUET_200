@@ -1,0 +1,9 @@
+com\authservice\dto\LoginRequest.class
+com\authservice\repository\UserRepository.class
+com\authservice\dto\RegisterRequest.class
+com\authservice\AuthServiceApplication.class
+com\authservice\model\User.class
+com\authservice\controller\AuthController.class
+com\authservice\service\JwtService.class
+com\authservice\service\EventPublisher.class
+com\authservice\service\AuthService.class
