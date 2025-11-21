@@ -15,34 +15,48 @@ const RETRY_DELAY = parseInt(process.env.CALLBACK_RETRY_DELAY_MS) || 1000;
  * Send callback to Payment Service
  * @param {Object} paySession - Pay session document
  * @param {Object} paymentData - Payment data to send
+ * @param {string} type - 'success' or 'failure'
  * @returns {Promise<boolean>} True if callback succeeded
  */
-async function sendCallback(paySession, paymentData) {
+async function sendCallback(paySession, paymentData, type = 'success') {
   // Check if callback already succeeded (idempotency)
   if (paySession.callbackSuccess) {
     logger.info(`Callback already succeeded for transaction: ${paySession.transaction_id}`);
     return true;
   }
 
-  const { callback_url } = paySession;
+  // Determine callback URL based on type
+  let callback_url;
+  if (type === 'failure' && paySession.meta?.callback_fail_url) {
+    callback_url = paySession.meta.callback_fail_url;
+  } else {
+    callback_url = paySession.callback_url;
+  }
+
+  // Append transaction_id to URL as required by payment service
+  // Endpoints expect: /payment/success or /payment/fail with transaction_id in body or query
+  const urlWithTxn = callback_url.includes('?') 
+    ? `${callback_url}&transaction_id=${paySession.transaction_id}`
+    : `${callback_url}?transaction_id=${paySession.transaction_id}`;
   
   const payload = {
     transaction_id: paymentData.transaction_id,
     amount: paymentData.amount,
     user_phone: paymentData.user_phone,
     user_id: paymentData.user_id,
-    status: 'SUCCESS',
-    wallet_tx_ref: paymentData.wallet_tx_ref,
+    status: type === 'success' ? 'SUCCESS' : 'FAILED',
+    wallet_tx_ref: paymentData.wallet_tx_ref || null,
+    failure_reason: paymentData.failure_reason || null,
     timestamp: new Date().toISOString(),
   };
 
-  logger.info(`Sending callback to: ${callback_url}`, payload);
+  logger.info(`Sending ${type} callback to: ${urlWithTxn}`, payload);
 
   let lastError = null;
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const response = await axios.post(callback_url, payload, {
+      const response = await axios.post(urlWithTxn, payload, {
         headers: {
           'Content-Type': 'application/json',
           'X-Wallet-Signature': generateSignature(payload),
@@ -108,6 +122,25 @@ function sleep(ms) {
 }
 
 /**
+ * Send failure callback to Payment Service
+ * @param {Object} paySession - Pay session document
+ * @param {string} failureReason - Reason for failure
+ * @returns {Promise<boolean>} True if callback succeeded
+ */
+async function sendFailureCallback(paySession, failureReason) {
+  const paymentData = {
+    transaction_id: paySession.transaction_id,
+    amount: paySession.amount,
+    user_phone: paySession.userPhone || null,
+    user_id: paySession.userId || null,
+    wallet_tx_ref: null,
+    failure_reason: failureReason,
+  };
+
+  return sendCallback(paySession, paymentData, 'failure');
+}
+
+/**
  * Retry failed callbacks (can be run periodically)
  * @returns {Promise<number>} Number of successful retries
  */
@@ -129,7 +162,7 @@ async function retryFailedCallbacks() {
       wallet_tx_ref: session.wallet_tx_ref,
     };
 
-    const success = await sendCallback(session, paymentData);
+    const success = await sendCallback(session, paymentData, 'success');
     if (success) successCount++;
   }
 
@@ -142,6 +175,7 @@ async function retryFailedCallbacks() {
 
 module.exports = {
   sendCallback,
+  sendFailureCallback,
   retryFailedCallbacks,
   generateSignature,
 };
