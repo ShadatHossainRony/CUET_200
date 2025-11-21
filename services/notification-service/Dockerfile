@@ -4,7 +4,7 @@ WORKDIR /usr/src/app
 
 FROM base AS deps
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci
 
 FROM base AS build
 COPY package*.json ./
