@@ -2,77 +2,81 @@ services:
   # ============================================
   # API GATEWAY (single container)
   # ============================================
-  api-gateway:
-    build:
-      context: ./services/api-gateway
-      dockerfile: Dockerfile
-    container_name: api-gateway
-    environment:
-      - NODE_ENV=production
-      - PORT=8000
-      - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
-      - AUTH_SERVICE_URL=http://auth-service:8001
-      - CAMPAIGN_SERVICE_URL=http://campaign-service:8002
-      - PLEDGE_SERVICE_URL=http://pledge-service:8003
-      - PAYMENT_SERVICE_URL=http://payment-service:8004
-      - TOTALS_SERVICE_URL=http://totals-service:8005
-      - ADMIN_SERVICE_URL=http://admin-service:8007
-      - NOTIFICATION_SERVICE=http://admin-service:9000
-    depends_on:
-      - redis
-    networks:
-      - backend
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8000/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
+  # api-gateway:
+  #   build:
+  #     context: ./services/api-gateway
+  #     dockerfile: Dockerfile
+  #   container_name: api-gateway
+  #   environment:
+  #     - NODE_ENV=production
+  #     - PORT=8000
+  #     - REDIS_URL=redis://redis:6379
+  #     - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
+  #     - AUTH_SERVICE_URL=http://auth-service:8001
+  #     - CAMPAIGN_SERVICE_URL=http://campaign-service:8002
+  #     - PLEDGE_SERVICE_URL=http://pledge-service:8003
+  #     - PAYMENT_SERVICE_URL=http://payment-service:8004
+  #     - TOTALS_SERVICE_URL=http://totals-service:8005
+  #     - ADMIN_SERVICE_URL=http://admin-service:8007
+  #     - NOTIFICATION_SERVICE=http://admin-service:9000
+  #   depends_on:
+  #     - redis
+  #   networks:
+  #     - backend
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8000/health"]
+  #     interval: 15s
+  #     timeout: 5s
+  #     retries: 3
 
   # ============================================
   # NOTIFICATION SERVICE (single container)
   # ============================================
-  notification-service:
-    build:
-      context: ./services/notification-service
-      dockerfile: Dockerfile
-    container_name: notification-service
-    environment:
-      - NODE_ENV=production
-      - PORT=9000
-      - REDIS_URL=redis://redis:6379
-    depends_on:
-      - mongodb
-      - redis
-    networks:
-      - backend
-    restart: unless-stopped
+  # notification-service:
+  #   build:
+  #     context: ./services/notification-service
+  #     dockerfile: Dockerfile
+  #   container_name: notification-service
+  #   environment:
+  #     - NODE_ENV=production
+  #     - PORT=9000
+  #     - REDIS_URL=redis://redis:6379
+  #   ports:
+  #     - "9000:9000"
+  #   depends_on:
+  #     - mongodb
+  #     - redis
+  #   networks:
+  #     - backend
+  #   restart: unless-stopped
 
-  # ============================================
-  # CAMPAIGN SERVICE (single container)
-  # ============================================
-  payment-service:
-    build:
-      context: ./services/payment-service
-      dockerfile: Dockerfile
-    container_name: campaign-service
-    environment:
-      - NODE_ENV=production
-      - PORT=8004
-      - MONGODB_URI=mongodb://mongodb:27017/payment-db
-      - REDIS_URL=redis://redis:6379
-    depends_on:
-      - mongodb
-      - redis
-    networks:
-      - backend
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8004/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
+  # # ============================================
+  # # CAMPAIGN SERVICE (single container)
+  # # ============================================
+  # payment-service:
+  #   build:
+  #     context: ./services/payment-service
+  #     dockerfile: Dockerfile
+  #   container_name: payment-service
+  #   environment:
+  #     - NODE_ENV=production
+  #     - PORT=8004
+  #     - MONGO_URI=mongodb://mongodb:27017/payment-db
+  #     - REDIS_URL=redis://redis:6379
+  #   depends_on:
+  #     - mongodb
+  #     - redis
+  #   networks:
+  #     - backend
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8004:8004"
+  #   healthcheck:
+  #     test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8004/health"]
+  #     interval: 15s
+  #     timeout: 5s
+  #     retries: 3
 
   mongodb:
     image: mongo:latest

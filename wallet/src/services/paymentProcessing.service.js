@@ -16,10 +16,32 @@ const logger = require('../utils/logger');
  * @param {Object} user - User document
  * @returns {Promise<Object>} Result with success status and data
  */
+function supportsTransactions() {
+  const connection = mongoose.connection;
+  if (!connection?.client) {
+    return false;
+  }
+
+  const topology = connection.client.topology;
+  const topologyType = topology?.description?.type;
+  const replicaSetConfigured = Boolean(connection.client.s?.options?.replicaSet);
+
+  return (
+    replicaSetConfigured ||
+    topologyType === 'ReplicaSetWithPrimary' ||
+    topologyType === 'Sharded'
+  );
+}
+
 async function processPayment(paySession, user) {
+  const session = await mongoose.startSession();
+  
   try {
+    session.startTransaction();
+
     // Check if already processed (idempotency)
     if (paySession.status === 'SUCCESS') {
+      await session.abortTransaction();
       return {
         success: true,
         alreadyProcessed: true,
@@ -34,6 +56,7 @@ async function processPayment(paySession, user) {
 
     // Check balance
     if (!user.hasSufficientBalance(paySession.amount)) {
+      await session.abortTransaction();
       return {
         success: false,
         reason: 'INSUFFICIENT_BALANCE',
@@ -56,10 +79,12 @@ async function processPayment(paySession, user) {
       },
       {
         new: true,
+        session,
       }
     );
 
     if (!updatedUser) {
+      await session.abortTransaction();
       return {
         success: false,
         reason: 'DEDUCTION_FAILED',
@@ -86,7 +111,7 @@ async function processPayment(paySession, user) {
       },
     });
 
-    await transaction.save();
+    await transaction.save({ session });
 
     // Update pay session
     paySession.status = 'SUCCESS';
@@ -94,7 +119,10 @@ async function processPayment(paySession, user) {
     paySession.userPhone = user.phone;
     paySession.wallet_tx_ref = walletTxRef;
     paySession.completedAt = new Date();
-    await paySession.save();
+    await paySession.save({ session });
+
+    // Commit transaction
+    await session.commitTransaction();
 
     logger.info(`Payment processed successfully: ${paySession.transaction_id}, User: ${user.phone}, Amount: ${paySession.amount}`);
 
@@ -113,8 +141,11 @@ async function processPayment(paySession, user) {
     };
 
   } catch (error) {
+    await session.abortTransaction();
     logger.error(`Payment processing error: ${error.message}`);
     throw error;
+  } finally {
+    session.endSession();
   }
 }
 
@@ -140,20 +171,22 @@ async function markPaymentFailed(paySession, reason) {
  * @returns {Promise<Object>} Result with new balance and transaction ID
  */
 async function processTopup(phone, amount) {
+  const session = await mongoose.startSession();
+  
   try {
-    const user = await User.findOne({ phone });
+    session.startTransaction();
+
+    const user = await User.findOne({ phone }).session(session);
     if (!user) {
+      await session.abortTransaction();
       throw new Error('User not found');
     }
 
     const previousBalance = user.balance;
     
-    // Increase balance atomically
-    const updatedUser = await User.findByIdAndUpdate(
-      user._id,
-      { $inc: { balance: amount } },
-      { new: true }
-    );
+    // Increase balance
+    user.balance += amount;
+    await user.save({ session });
 
     // Create transaction record
     const walletTxRef = generateWalletTxRef();
@@ -169,9 +202,11 @@ async function processTopup(phone, amount) {
       meta: { phone },
     });
 
-    await transaction.save();
+    await transaction.save({ session });
 
-    logger.info(`Topup processed: User: ${phone}, Amount: ${amount}, New Balance: ${updatedUser.balance}`);
+    await session.commitTransaction();
+
+    logger.info(`Topup processed: User: ${phone}, Amount: ${amount}, New Balance: ${user.balance}`);
 
     return {
       balance: updatedUser.balance,
@@ -180,8 +215,11 @@ async function processTopup(phone, amount) {
     };
 
   } catch (error) {
+    await session.abortTransaction();
     logger.error(`Topup processing error: ${error.message}`);
     throw error;
+  } finally {
+    session.endSession();
   }
 }
 

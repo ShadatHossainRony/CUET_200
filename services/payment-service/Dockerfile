@@ -16,6 +16,6 @@ COPY index.js ./
 # Copy env (optionally you may mount at runtime instead)
 COPY .env ./
 
-EXPOSE 3004
+EXPOSE 8004
 
 CMD ["node", "index.js"]

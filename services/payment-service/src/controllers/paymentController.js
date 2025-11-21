@@ -84,6 +84,8 @@ async function successfullTransaction(req, res) {
             amount: transaction.amount,
         })
 
+        console.log(`✅ Transaction Successful`)
+
         return res.status(200).json({
             success: true,
             message: 'Transaction marked as completed',
@@ -116,6 +118,8 @@ async function failureTransaction(req, res) {
             success: false,
             transactionId: transaction.transactionId,
         })
+
+        console.log(`❌client Transaction Failed`)
         return res.status(200).json({
             success: true,
             message: 'Transaction marked as completed',

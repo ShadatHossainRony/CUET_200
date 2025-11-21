@@ -16,3 +16,9 @@
 [31m    163|       <div class="error-value"><%= error %></div>[39m
 
 [31merror is not defined[39m
+2025-11-21 16:06:08:68 [31merror[39m: [31mUncaught Exception: listen EADDRINUSE: address already in use 0.0.0.0:9001[39m
+2025-11-21 16:08:34:834 [31merror[39m: [31mPayment processing error: Transaction numbers are only allowed on a replica set member or mongos[39m
+2025-11-21 16:08:34:834 [31merror[39m: [31mProcess payment error: Transaction numbers are only allowed on a replica set member or mongos[39m
+2025-11-21 16:12:51:1251 [31merror[39m: [31mPayment processing error: Transaction numbers are only allowed on a replica set member or mongos[39m
+2025-11-21 16:12:51:1251 [31merror[39m: [31mProcess payment error: Transaction numbers are only allowed on a replica set member or mongos[39m
+2025-11-21 16:16:58:1658 [31merror[39m: [31mAll callback attempts failed for transaction: tx_iDJvvdBwd. Last error: Invalid URL[39m

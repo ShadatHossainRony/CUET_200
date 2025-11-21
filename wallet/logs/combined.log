@@ -33,3 +33,50 @@
 
 [31merror is not defined[39m
 2025-11-21 15:34:08:348 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:09:34:08 +0000] "POST /wallet/pay/tx_T-ExPqSnY HTTP/1.1" 500 363 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 16:05:49:549 [32minfo[39m: [32mConnected to MongoDB[39m
+2025-11-21 16:05:49:549 [32minfo[39m: [32mWallet Gateway running on port 9001[39m
+2025-11-21 16:05:49:549 [32minfo[39m: [32mEnvironment: development[39m
+2025-11-21 16:05:51:551 [32minfo[39m: [32mConnected to MongoDB[39m
+2025-11-21 16:05:51:551 [32minfo[39m: [32mWallet Gateway running on port 9001[39m
+2025-11-21 16:05:51:551 [32minfo[39m: [32mEnvironment: development[39m
+2025-11-21 16:06:08:68 [32minfo[39m: [32mConnected to MongoDB[39m
+2025-11-21 16:07:39:739 [32minfo[39m: [32mConnected to MongoDB[39m
+2025-11-21 16:07:39:739 [32minfo[39m: [32mWallet Gateway running on port 9001[39m
+2025-11-21 16:07:39:739 [32minfo[39m: [32mEnvironment: development[39m
+2025-11-21 16:08:13:813 [32minfo[39m: [32mPayment session created: tx_LxRuKczOS, Amount: 50[39m
+2025-11-21 16:08:13:813 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:10:08:13 +0000] "POST /wallet/pay HTTP/1.1" 201 131 "-" "axios/1.13.2"[39m
+2025-11-21 16:08:18:818 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:10:08:18 +0000] "GET /wallet/pay/tx_LxRuKczOS HTTP/1.1" 200 4497 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 16:08:34:834 [31merror[39m: [31mPayment processing error: Transaction numbers are only allowed on a replica set member or mongos[39m
+2025-11-21 16:08:34:834 [31merror[39m: [31mProcess payment error: Transaction numbers are only allowed on a replica set member or mongos[39m
+2025-11-21 16:08:34:834 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:10:08:34 +0000] "POST /wallet/pay/tx_LxRuKczOS HTTP/1.1" 500 2103 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 16:09:50:950 [32minfo[39m: [32mConnected to MongoDB[39m
+2025-11-21 16:09:50:950 [32minfo[39m: [32mWallet Gateway running on port 9001[39m
+2025-11-21 16:09:50:950 [32minfo[39m: [32mEnvironment: development[39m
+2025-11-21 16:12:12:1212 [32minfo[39m: [32mPayment session created: tx_iDJvvdBwd, Amount: 50[39m
+2025-11-21 16:12:12:1212 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:10:12:12 +0000] "POST /wallet/pay HTTP/1.1" 201 131 "-" "axios/1.13.2"[39m
+2025-11-21 16:12:29:1229 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:10:12:29 +0000] "GET /wallet/pay/tx_iDJvvdBwd HTTP/1.1" 200 4497 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 16:12:51:1251 [31merror[39m: [31mPayment processing error: Transaction numbers are only allowed on a replica set member or mongos[39m
+2025-11-21 16:12:51:1251 [31merror[39m: [31mProcess payment error: Transaction numbers are only allowed on a replica set member or mongos[39m
+2025-11-21 16:12:51:1251 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:10:12:51 +0000] "POST /wallet/pay/tx_iDJvvdBwd HTTP/1.1" 500 2103 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 16:14:52:1452 [32minfo[39m: [32mConnected to MongoDB[39m
+2025-11-21 16:14:52:1452 [32minfo[39m: [32mWallet Gateway running on port 9001[39m
+2025-11-21 16:14:52:1452 [32minfo[39m: [32mEnvironment: development[39m
+2025-11-21 16:15:33:1533 [32minfo[39m: [32mConnected to MongoDB[39m
+2025-11-21 16:15:33:1533 [32minfo[39m: [32mWallet Gateway running on port 9001[39m
+2025-11-21 16:15:33:1533 [32minfo[39m: [32mEnvironment: development[39m
+2025-11-21 16:16:46:1646 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:10:16:46 +0000] "GET / HTTP/1.1" 304 - "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 16:16:55:1655 [32minfo[39m: [32mPayment processed successfully: tx_iDJvvdBwd, User: 01700000001, Amount: 50[39m
+2025-11-21 16:16:55:1655 [32minfo[39m: [32mSending success callback to: undefined/payment/success?transaction_id=tx_iDJvvdBwd[39m
+2025-11-21 16:16:55:1655 [33mwarn[39m: [33mCallback attempt 1/3 failed: Invalid URL[39m
+2025-11-21 16:16:55:1655 [32minfo[39m: [32m127.0.0.1 - - [21/Nov/2025:10:16:55 +0000] "POST /wallet/pay/tx_iDJvvdBwd HTTP/1.1" 200 3971 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"[39m
+2025-11-21 16:16:55:1655 [32minfo[39m: [32mRetrying callback in 1000ms...[39m
+2025-11-21 16:16:56:1656 [33mwarn[39m: [33mCallback attempt 2/3 failed: Invalid URL[39m
+2025-11-21 16:16:56:1656 [32minfo[39m: [32mRetrying callback in 2000ms...[39m
+2025-11-21 16:16:58:1658 [33mwarn[39m: [33mCallback attempt 3/3 failed: Invalid URL[39m
+2025-11-21 16:16:58:1658 [31merror[39m: [31mAll callback attempts failed for transaction: tx_iDJvvdBwd. Last error: Invalid URL[39m
+2025-11-21 16:18:21:1821 [32minfo[39m: [32mConnected to MongoDB[39m
+2025-11-21 16:18:21:1821 [32minfo[39m: [32mWallet Gateway running on port 9001[39m
+2025-11-21 16:18:21:1821 [32minfo[39m: [32mEnvironment: development[39m
+2025-11-21 16:18:32:1832 [32minfo[39m: [32mConnected to MongoDB[39m
+2025-11-21 16:18:32:1832 [32minfo[39m: [32mWallet Gateway running on port 9001[39m
+2025-11-21 16:18:32:1832 [32minfo[39m: [32mEnvironment: development[39m
